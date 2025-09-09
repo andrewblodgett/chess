@@ -2,6 +2,7 @@ package chess;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a single chess piece
@@ -56,7 +57,6 @@ public class ChessPiece {
         var validMoves = new HashSet<ChessMove>();
         var row = pos.getRow();
         var col = pos.getColumn()-1;
-        System.out.println(row + " " + col);
 
         if (type == PieceType.BISHOP) {
             while (true) {
