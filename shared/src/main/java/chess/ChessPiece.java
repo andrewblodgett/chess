@@ -179,6 +179,60 @@ public class ChessPiece {
                     break;
                 }
             }
+        } else if (type == PieceType.KING) {
+
+        } else if (type == PieceType.KNIGHT) {
+
+        } else if (type == PieceType.PAWN) {
+            var directionMultiplier = 1;
+            var startingRow = 2;
+            var promoRow = 8;
+            if (pieceColor == ChessGame.TeamColor.BLACK) {
+                directionMultiplier = -1;
+                startingRow = 7;
+                promoRow = 1;
+            }
+            // Checking to see if they can capture diagonally
+            try {
+                if (canCapture(board.getPiece(new ChessPosition(row+directionMultiplier, col+1)))) {
+                    validMoves.add(new ChessMove(pos, new ChessPosition(row + directionMultiplier, col + 1), null));
+
+                }
+            } catch (ArrayIndexOutOfBoundsException e){
+
+            }
+            try {
+                if (canCapture(board.getPiece(new ChessPosition(row+directionMultiplier, col-1)))) {
+                    validMoves.add(new ChessMove(pos, new ChessPosition(row+directionMultiplier, col-1), null));
+                }
+            }
+            catch (ArrayIndexOutOfBoundsException e){
+
+            }
+            // See if the pawn can advance
+            if (board.getPiece(new ChessPosition(row+directionMultiplier, col)) == null) {
+                validMoves.add(new ChessMove(pos, new ChessPosition(row+directionMultiplier, col), null));
+                if (row == startingRow) {
+                    if (board.getPiece(new ChessPosition(row+2*directionMultiplier, col)) == null) {
+                        validMoves.add(new ChessMove(pos, new ChessPosition(row+2*directionMultiplier, col), null));
+                    }
+                }
+            }
+            var movesToRemove = new HashSet<ChessMove>();
+            var movesToAdd = new HashSet<ChessMove>();
+
+            for (var m : validMoves) {
+                if (m.getEndPosition().getRow() == promoRow) {
+                    movesToRemove.add(m);
+                    movesToAdd.add(new ChessMove(m, PieceType.QUEEN));
+                    movesToAdd.add(new ChessMove(m, PieceType.ROOK));
+                    movesToAdd.add(new ChessMove(m, PieceType.BISHOP));
+                    movesToAdd.add(new ChessMove(m, PieceType.KNIGHT));
+                }
+            }
+            validMoves.removeAll(movesToRemove);
+            validMoves.addAll(movesToAdd);
+
         }
 
         return validMoves;
