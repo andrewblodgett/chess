@@ -76,7 +76,7 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition pos) {
         var validMoves = new HashSet<ChessMove>();
         var row = pos.getRow();
-        var col = pos.getColumn()-1;
+        var col = pos.getColumn();
 
         if (type == PieceType.BISHOP) {
             while (true) {
@@ -91,7 +91,7 @@ public class ChessPiece {
                 }
             }
             row = pos.getRow();
-            col = pos.getColumn()-1;
+            col = pos.getColumn();
             while (true) {
                 row = row +1;
                 col = col-1;
@@ -104,7 +104,7 @@ public class ChessPiece {
                 }
             }
             row = pos.getRow();
-            col = pos.getColumn()-1;
+            col = pos.getColumn();
             while (true) {
                 row = row-1;
                 col = col+1;
@@ -117,7 +117,7 @@ public class ChessPiece {
                 }
             }
             row = pos.getRow();
-            col = pos.getColumn()-1;
+            col = pos.getColumn();
             while (true) {
                 row = row-1;
                 col = col-1;
