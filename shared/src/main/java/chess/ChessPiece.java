@@ -2,7 +2,7 @@ package chess;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -46,6 +46,26 @@ public class ChessPiece {
         return type;
     }
 
+
+    private boolean isSameColor(ChessPiece piece) {
+        if (piece == null) {
+            return false;
+        }
+        else {
+            return piece.getTeamColor() == pieceColor;
+        }
+    }
+
+    private boolean canCapture(ChessPiece piece) {
+        if (piece == null) {
+            return false;
+        }
+        else {
+            return !isSameColor(piece);
+        }
+    }
+
+
     /**
      * Calculates all the positions a chess piece can move to
      * Does not take into account moves that are illegal due to leaving the king in
@@ -62,44 +82,70 @@ public class ChessPiece {
             while (true) {
                 row = row +1;
                 col = col+1;
-                if (row > 8 || col > 8) {
+                if (row > 8 || col > 8 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
                     break;
                 }
                 validMoves.add(new ChessMove(pos, new ChessPosition(row, col), null));
+                if (canCapture(board.getPiece(new ChessPosition(row, col)))) {
+                    break;
+                }
             }
             row = pos.getRow();
             col = pos.getColumn()-1;
             while (true) {
                 row = row +1;
                 col = col-1;
-                if (row > 8 || col < 1) {
+                if (row > 8 || col < 1 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
                     break;
                 }
                 validMoves.add(new ChessMove(pos, new ChessPosition(row, col), null));
+                if (canCapture(board.getPiece(new ChessPosition(row, col)))) {
+                    break;
+                }
             }
             row = pos.getRow();
             col = pos.getColumn()-1;
             while (true) {
                 row = row-1;
                 col = col+1;
-                if (row < 1 || col > 8) {
+                if (row < 1 || col > 8 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
                     break;
                 }
                 validMoves.add(new ChessMove(pos, new ChessPosition(row, col), null));
+                if (canCapture(board.getPiece(new ChessPosition(row, col)))) {
+                    break;
+                }
             }
             row = pos.getRow();
             col = pos.getColumn()-1;
             while (true) {
                 row = row-1;
                 col = col-1;
-                if (row < 1 || col < 1) {
+                if (row < 1 || col < 1 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
                     break;
                 }
                 validMoves.add(new ChessMove(pos, new ChessPosition(row, col), null));
+                if (canCapture(board.getPiece(new ChessPosition(row, col)))) {
+                    break;
+                }
             }
 
         }
 
         return validMoves;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPiece that = (ChessPiece) o;
+        return pieceColor == that.pieceColor && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
     }
 }
