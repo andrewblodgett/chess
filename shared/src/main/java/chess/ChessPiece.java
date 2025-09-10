@@ -78,7 +78,7 @@ public class ChessPiece {
         var row = pos.getRow();
         var col = pos.getColumn();
 
-        if (type == PieceType.BISHOP) {
+        if (type == PieceType.BISHOP || type == PieceType.QUEEN) {
             while (true) {
                 row = row +1;
                 col = col+1;
@@ -130,7 +130,10 @@ public class ChessPiece {
                 }
             }
 
-        } else if (type == PieceType.ROOK) {
+        }
+        if (type == PieceType.ROOK || type == PieceType.QUEEN) {
+            row = pos.getRow();
+            col = pos.getColumn();
             var temprow = row;
             var tempcol = col;
             while (temprow < 8) {
