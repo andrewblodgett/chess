@@ -130,6 +130,52 @@ public class ChessPiece {
                 }
             }
 
+        } else if (type == PieceType.ROOK) {
+            var temprow = row;
+            var tempcol = col;
+            while (temprow < 8) {
+                temprow++;
+                if (isSameColor(board.getPiece(new ChessPosition(temprow, tempcol)))) {
+                    break;
+                }
+                validMoves.add(new ChessMove(pos, new ChessPosition(temprow, tempcol), null));
+                if (canCapture(board.getPiece(new ChessPosition(temprow, tempcol)))) {
+                    break;
+                }
+            }
+            temprow = row;
+            while (temprow > 1) {
+                temprow--;
+                if (isSameColor(board.getPiece(new ChessPosition(temprow, tempcol)))) {
+                    break;
+                }
+                validMoves.add(new ChessMove(pos, new ChessPosition(temprow, tempcol), null));
+                if (canCapture(board.getPiece(new ChessPosition(temprow, tempcol)))) {
+                    break;
+                }
+            }
+            temprow = row;
+            while (tempcol > 1) {
+                tempcol--;
+                if (isSameColor(board.getPiece(new ChessPosition(temprow, tempcol)))) {
+                    break;
+                }
+                validMoves.add(new ChessMove(pos, new ChessPosition(temprow, tempcol), null));
+                if (canCapture(board.getPiece(new ChessPosition(temprow, tempcol)))) {
+                    break;
+                }
+            }
+            tempcol = col;
+            while (tempcol < 8) {
+                tempcol++;
+                if (isSameColor(board.getPiece(new ChessPosition(temprow, tempcol)))) {
+                    break;
+                }
+                validMoves.add(new ChessMove(pos, new ChessPosition(temprow, tempcol), null));
+                if (canCapture(board.getPiece(new ChessPosition(temprow, tempcol)))) {
+                    break;
+                }
+            }
         }
 
         return validMoves;
