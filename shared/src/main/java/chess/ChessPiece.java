@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
 
@@ -180,9 +181,34 @@ public class ChessPiece {
                 }
             }
         } else if (type == PieceType.KING) {
+             int[][] kingPossibilities = {{1,1},{1,0},{1,-1},{0,1},{0,-1},{-1,1},{-1,0},{-1,-1}};
+            for (var p : kingPossibilities) {
+                try {
+                    var newpos = new ChessPosition(row+p[0],col+p[1]);
+                    if (board.getPiece(newpos) == null) {
+                        validMoves.add(new ChessMove(pos, newpos,null));
+                    } else if (canCapture(board.getPiece(newpos))) {
+                        validMoves.add(new ChessMove(pos, newpos,null));
+                    }
+                } catch (Exception e) {}
+            }
+
 
         } else if (type == PieceType.KNIGHT) {
+            int[][] knightPossibilities = {{2,1},{1,2},{2,-1},{-1,2},{-2,-1},{-1,-2},{-2,1},{1,-2}};
+            for (var p : knightPossibilities) {
+                try {
+                    if(col+p[1] > 0 && row+p[0] > 0){
+                        var newpos = new ChessPosition(row+p[0],col+p[1]);
+                        if (board.getPiece(newpos) == null) {
+                            validMoves.add(new ChessMove(pos, newpos,null));
+                        } else if (canCapture(board.getPiece(newpos))) {
+                            validMoves.add(new ChessMove(pos, newpos,null));
+                        }
+                    }
 
+                } catch (Exception e) {}
+            }
         } else if (type == PieceType.PAWN) {
             var directionMultiplier = 1;
             var startingRow = 2;
@@ -250,5 +276,27 @@ public class ChessPiece {
     @Override
     public int hashCode() {
         return Objects.hash(pieceColor, type);
+    }
+
+    @Override
+    public String toString() {
+        var s = "";
+        if (type == PieceType.PAWN) {
+            s = "p";
+        } else if (type == PieceType.KNIGHT) {
+            s = "n";
+        } else if (type == PieceType.BISHOP) {
+            s = "b";
+        } else if (type == PieceType.ROOK) {
+            s = "r";
+        } else if (type == PieceType.QUEEN) {
+            s = "q";
+        } else if (type == PieceType.KING) {
+            s = "k";
+        }
+        if (pieceColor == ChessGame.TeamColor.WHITE) {
+            s = s.toUpperCase();
+        }
+        return s;
     }
 }
