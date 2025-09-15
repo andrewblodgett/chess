@@ -71,7 +71,7 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         var startPiece = gameboard.getPiece(move.getStartPosition());
-        if (validMoves(move.getStartPosition()).contains(move)) {
+        if (validMoves(move.getStartPosition()).contains(move) && !isInCheck(startPiece.getTeamColor())) {
             gameboard.addPiece(move.getEndPosition(),new ChessPiece(startPiece.getTeamColor(), (move.getPromotionPiece() == null) ? startPiece.getPieceType() : move.getPromotionPiece()));
             gameboard.addPiece(move.getStartPosition(),null);
             isWhitesTurn = !isWhitesTurn;
@@ -87,11 +87,26 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
+        ChessPosition kingPosition = null;
+        var enemyMoves = new HashSet<ChessPosition>();
         for (var row = 1; row < 8; row++) {
+
             for (var col = 1; col < 8; col++) {
-                return false;
+                var pieceInQuestion = gameboard.getPiece(new ChessPosition(row, col));
+                if (pieceInQuestion != null) {
+                    if (pieceInQuestion.getTeamColor() != teamColor) {
+                        for (var move : pieceInQuestion.pieceMoves(gameboard, new ChessPosition(row, col))) {
+                            enemyMoves.add(move.getEndPosition());
+                        }
+                    } else {
+                        if (pieceInQuestion.getPieceType() == ChessPiece.PieceType.KING) {
+                            kingPosition = new ChessPosition(row, col);
+                        }
+                    }
+                }
             }
         }
+        return enemyMoves.contains(kingPosition);
     }
 
     /**
