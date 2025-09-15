@@ -19,6 +19,7 @@ public class ChessGame {
     public ChessGame() {
         gameboard = new ChessBoard();
         gameboard.resetBoard();
+        isWhitesTurn = true;
     }
 
     /**
