@@ -22,6 +22,12 @@ public class ChessGame {
         isWhitesTurn = true;
     }
 
+    private ChessGame(ChessGame game, ChessMove potentialMove) {
+        gameboard = game.getBoard();
+        isWhitesTurn = game.isWhitesTurn;
+        makeUnprotectedMove(potentialMove);
+    }
+
     /**
      * @return Which team's turn it is
      */
@@ -56,12 +62,27 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         var startPiece = gameboard.getPiece(startPosition);
         if (startPiece == null) {
-            return new HashSet<>();
+            return null;
         }
-        if ((startPiece.getTeamColor() == TeamColor.WHITE && isWhitesTurn) || (startPiece.getTeamColor()==TeamColor.BLACK && !isWhitesTurn)) {
-            return startPiece.pieceMoves(gameboard, startPosition);
+        var teamColor = startPiece.getTeamColor();
+            var potentialMoves = startPiece.pieceMoves(gameboard, startPosition);
+            var validMoves = new HashSet<ChessMove>();
+            for (var move : potentialMoves) {
+                var potentialScenario = new ChessGame(this, move);
+                if (!potentialScenario.isInCheck(teamColor)){
+                    validMoves.add(move);
+                }
+            }
+            return validMoves;
+    }
+
+    private void makeUnprotectedMove(ChessMove move) {
+        var startPiece = gameboard.getPiece(move.getStartPosition());
+        if (startPiece != null) {
+            gameboard.addPiece(move.getEndPosition(),new ChessPiece(startPiece.getTeamColor(), (move.getPromotionPiece() == null) ? startPiece.getPieceType() : move.getPromotionPiece()));
+            gameboard.addPiece(move.getStartPosition(),null);
         }
-        return new HashSet<>();
+
     }
 
     /**
@@ -72,13 +93,30 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         var startPiece = gameboard.getPiece(move.getStartPosition());
-        if (validMoves(move.getStartPosition()).contains(move) && !isInCheck(startPiece.getTeamColor())) {
-            gameboard.addPiece(move.getEndPosition(),new ChessPiece(startPiece.getTeamColor(), (move.getPromotionPiece() == null) ? startPiece.getPieceType() : move.getPromotionPiece()));
-            gameboard.addPiece(move.getStartPosition(),null);
+        if (startPiece == null) {
+            throw new InvalidMoveException("That move is not allowed");
+        }
+        var teamColor = startPiece.getTeamColor();
+        if (validMoves(move.getStartPosition()).contains(move) && !isInCheck(startPiece.getTeamColor()) && (teamColor == TeamColor.WHITE && isWhitesTurn) || (teamColor==TeamColor.BLACK && !isWhitesTurn)) {
+            makeUnprotectedMove(move);
             isWhitesTurn = !isWhitesTurn;
         } else {
             throw new InvalidMoveException("That move is not allowed");
         }
+    }
+
+    private ChessPosition getKingPosition(TeamColor teamColor) {
+        for (var row = 1; row < 8; row++) {
+            for (var col = 1; col < 8; col++) {
+                var pieceInQuestion = gameboard.getPiece(new ChessPosition(row, col));
+                if (pieceInQuestion != null) {
+                    if (pieceInQuestion.getPieceType() == ChessPiece.PieceType.KING) {
+                        return new ChessPosition(row, col);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -88,10 +126,9 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        ChessPosition kingPosition = null;
+        ChessPosition kingPosition = getKingPosition(teamColor);
         var enemyMoves = new HashSet<ChessPosition>();
         for (var row = 1; row < 8; row++) {
-
             for (var col = 1; col < 8; col++) {
                 var pieceInQuestion = gameboard.getPiece(new ChessPosition(row, col));
                 if (pieceInQuestion != null) {
@@ -99,11 +136,10 @@ public class ChessGame {
                         for (var move : pieceInQuestion.pieceMoves(gameboard, new ChessPosition(row, col))) {
                             enemyMoves.add(move.getEndPosition());
                         }
-                    } else {
-                        if (pieceInQuestion.getPieceType() == ChessPiece.PieceType.KING) {
-                            kingPosition = new ChessPosition(row, col);
-                        }
                     }
+                }
+                if (enemyMoves.contains(kingPosition)) {
+                    return true;
                 }
             }
         }
@@ -117,7 +153,11 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (isInCheck(teamColor)) {
+            return gameboard.getPiece(getKingPosition(teamColor)).pieceMoves(gameboard, getKingPosition(teamColor)).isEmpty();
+        }
+        return false;
+
     }
 
     /**
@@ -128,7 +168,10 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (!isInCheck(teamColor)) {
+
+        }
+        return false;
     }
 
     /**
@@ -137,7 +180,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        gameboard = board;
+        gameboard = board.copy();
     }
 
     /**
@@ -146,7 +189,7 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        return gameboard;
+        return gameboard.copy();
     }
 
 

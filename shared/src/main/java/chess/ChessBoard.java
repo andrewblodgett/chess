@@ -14,6 +14,9 @@ public class ChessBoard {
     public ChessBoard() {
         
     }
+    private ChessBoard(ChessPiece[][] newBoard) {
+        board = newBoard;
+    }
 
     /**
      * Adds a chess piece to the chessboard
@@ -73,6 +76,16 @@ public class ChessBoard {
 
         board[8][4] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN);
 
+    }
+
+    public ChessBoard copy() {
+        ChessPiece[][] copiedBoard = new ChessPiece[9][9];
+        for (var i = 1; i < 9; i++ ){
+            for (var j = 1; j<9; j++) {
+                copiedBoard[i][j] = board[i][j];
+            }
+        }
+        return new ChessBoard(copiedBoard);
     }
 
     @Override
