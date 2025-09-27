@@ -104,13 +104,13 @@ public class ChessBoard {
 
     @Override
     public String toString() {
-        var s = "[";
+        var s = "";
         for (var row : board) {
             for (var p : row) {
                 if (p != null) {
-                    s += p.toString() + " ";
+                    s += p.toString() + "|";
                 } else {
-                    s+= "  ";
+                    s+= "_|";
                 }
             }
             s += "\n";

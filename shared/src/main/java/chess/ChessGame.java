@@ -65,15 +65,30 @@ public class ChessGame {
             return null;
         }
         var teamColor = startPiece.getTeamColor();
-            var potentialMoves = startPiece.pieceMoves(gameboard, startPosition);
-            var validMoves = new HashSet<ChessMove>();
-            for (var move : potentialMoves) {
-                var potentialScenario = new ChessGame(this, move);
-                if (!potentialScenario.isInCheck(teamColor)){
-                    validMoves.add(move);
+        var potentialMoves = startPiece.pieceMoves(gameboard, startPosition);
+        var validMoves = new HashSet<ChessMove>();
+        for (var move : potentialMoves) {
+            var potentialScenario = new ChessGame(this, move);
+            if (!potentialScenario.isInCheck(teamColor)){
+                validMoves.add(move);
+            }
+        }
+        return validMoves;
+    }
+
+    private Collection<ChessMove> validMovesForTheWholeTeam(TeamColor color) {
+        var teamMoves = new HashSet<ChessMove>();
+        for (var row = 1; row < 8; row++) {
+            for (var col = 1; col < 8; col++) {
+                var currentSquare = new ChessPosition(row, col);
+                if (gameboard.getPiece(currentSquare) != null) {
+                    if (gameboard.getPiece(currentSquare).getTeamColor() == color) {
+                        teamMoves.addAll(validMoves(currentSquare));
+                    }
                 }
             }
-            return validMoves;
+        }
+        return teamMoves;
     }
 
     private void makeUnprotectedMove(ChessMove move) {
@@ -154,7 +169,8 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         if (isInCheck(teamColor)) {
-            return gameboard.getPiece(getKingPosition(teamColor)).pieceMoves(gameboard, getKingPosition(teamColor)).isEmpty();
+            return validMovesForTheWholeTeam(teamColor).isEmpty();
+//            return gameboard.getPiece(getKingPosition(teamColor)).pieceMoves(gameboard, getKingPosition(teamColor)).isEmpty();
         }
         return false;
 
@@ -169,7 +185,7 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         if (!isInCheck(teamColor)) {
-
+            return validMoves(getKingPosition(teamColor)).isEmpty();
         }
         return false;
     }
@@ -205,5 +221,13 @@ public class ChessGame {
     @Override
     public int hashCode() {
         return 71 * (isWhitesTurn ? 2 : 1) * gameboard.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        var s = gameboard.toString();
+        s+="\n";
+        s+= (isWhitesTurn) ? "White's turn" : "Black's turn";
+        return s;
     }
 }
