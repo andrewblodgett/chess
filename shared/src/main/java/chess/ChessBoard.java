@@ -39,6 +39,13 @@ public class ChessBoard {
         return board[position.getRow()][position.getColumn()];
     }
 
+    public void movePiece(ChessMove move) {
+        var startPos = move.getStartPosition();
+        var endPos = move.getEndPosition();
+        board[endPos.getRow()][endPos.getColumn()] = board[startPos.getRow()][startPos.getColumn()];
+        board[startPos.getRow()][startPos.getColumn()] = null;
+    }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
