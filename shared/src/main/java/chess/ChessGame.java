@@ -48,7 +48,21 @@ public class ChessGame {
      */
     public enum TeamColor {
         WHITE,
-        BLACK
+        BLACK,
+    }
+
+    /**
+     * A utility method to easily get the other team.
+     *
+     * @param color
+     * @return the other team's color
+     */
+    private TeamColor otherTeam(TeamColor color) {
+        if (color == TeamColor.WHITE) {
+            return TeamColor.BLACK;
+        } else {
+            return TeamColor.WHITE;
+        }
     }
 
     /**
@@ -59,10 +73,61 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-
+        var startPiece = gameboard.getPiece(startPosition);
+        var validMoves = new HashSet<ChessMove>();
+        var possibleMoves = startPiece.pieceMoves(gameboard, startPosition);
+        for (var potentialMove : possibleMoves) {
+            var potentialBoard = gameboard.copy();
+            potentialBoard.movePiece(potentialMove);
+            if (!evaluateBoardForCheck(potentialBoard, startPiece.getTeamColor())) {
+                validMoves.add(potentialMove);
+            }
+        }
+        return validMoves;
     }
 
+    private Collection<ChessMove> allValidMovesForTeam(TeamColor color) {
+        var allMoves = new HashSet<ChessMove>();
+        for (var row = 1; row < 9; row++) {
+            for (var col = 1; col < 9; col++) {
+                var currentPiece = gameboard.getPiece(new ChessPosition(row, col));
+                    if (currentPiece != null) {
+                        if (currentPiece.getTeamColor() == color) {
+                            allMoves.addAll(validMoves(new ChessPosition(row, col)));
+                        }
+                    }
+                }
+            }
+        return allMoves;
+    }
 
+    /**
+     * Evaluates a board to see if a team is in check.
+     *
+     * @param board
+     * @param teamColor
+     * @return true if the team is in check.
+     */
+    private boolean evaluateBoardForCheck(ChessBoard board, TeamColor teamColor) {
+        var kingPos = getKingPosition(board, teamColor);
+
+        for (var row = 1; row < 9; row++) {
+            for (var col = 1; col < 9; col++) {
+                var currentPiece = board.getPiece(new ChessPosition(row, col));
+                if (currentPiece != null) {
+                    if (currentPiece.getTeamColor() == otherTeam(teamColor)) {
+                        var potentialMoves = currentPiece.pieceMoves(board, new ChessPosition(row, col));
+                        for (var move : potentialMoves) {
+                            if (move.getEndPosition().getColumn() == kingPos.getColumn() && move.getEndPosition().getRow() == kingPos.getRow()) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
     /**
      * Makes a move in a chess game
      *
@@ -73,12 +138,12 @@ public class ChessGame {
 
     }
 
-    private ChessPosition getKingPosition(TeamColor teamColor) {
-        for (var row = 1; row < 8; row++) {
-            for (var col = 1; col < 8; col++) {
-                var pieceInQuestion = gameboard.getPiece(new ChessPosition(row, col));
+    private ChessPosition getKingPosition(ChessBoard board, TeamColor teamColor) {
+        for (var row = 1; row < 9; row++) {
+            for (var col = 1; col < 9; col++) {
+                var pieceInQuestion = board.getPiece(new ChessPosition(row, col));
                 if (pieceInQuestion != null) {
-                    if (pieceInQuestion.getPieceType() == ChessPiece.PieceType.KING) {
+                    if (pieceInQuestion.getPieceType() == ChessPiece.PieceType.KING && pieceInQuestion.getTeamColor() == teamColor) {
                         return new ChessPosition(row, col);
                     }
                 }
@@ -151,13 +216,18 @@ public class ChessGame {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         ChessGame chessGame = (ChessGame) o;
-        return isWhitesTurn == chessGame.isWhitesTurn && Objects.equals(gameboard, chessGame.gameboard);
+        return isWhitesTurn == chessGame.isWhitesTurn && isWhiteInCheck == chessGame.isWhiteInCheck && isBlackInCheck == chessGame.isBlackInCheck && Objects.equals(gameboard, chessGame.gameboard);
     }
 
     @Override
     public int hashCode() {
-        return 71 * (isWhitesTurn ? 2 : 1) * gameboard.hashCode();
+        int result = Boolean.hashCode(isWhitesTurn);
+        result = 31 * result + Objects.hashCode(gameboard);
+        result = 31 * result + Boolean.hashCode(isWhiteInCheck);
+        result = 31 * result + Boolean.hashCode(isBlackInCheck);
+        return result;
     }
 
     @Override
@@ -165,6 +235,12 @@ public class ChessGame {
         var s = gameboard.toString();
         s+="\n";
         s+= (isWhitesTurn) ? "White's turn" : "Black's turn";
+        if (isBlackInCheck) {
+            s+="\nBlack is in check.";
+        }
+        if (isWhiteInCheck) {
+            s+="\nWhite is in check";
+        }
         return s;
     }
 }
