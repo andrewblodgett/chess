@@ -135,7 +135,23 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        try {
+            var startingPiece = gameboard.getPiece(move.getStartPosition());
+            if ((startingPiece.getTeamColor() == TeamColor.WHITE && isWhitesTurn) || (startingPiece.getTeamColor() == TeamColor.BLACK && !isWhitesTurn)) {
+                if (validMoves(move.getStartPosition()).contains(move)) {
+                    gameboard.movePiece(move);
+                    isWhitesTurn = !isWhitesTurn;
 
+                } else {
+                    throw new InvalidMoveException(move.toString() + " is an invalid move.");
+                }
+            } else {
+                throw new InvalidMoveException(move.toString() + " is an invalid move.");
+            }
+
+        } catch (Exception e) {
+            throw new InvalidMoveException(move.toString() + " is an invalid move.");
+        }
     }
 
     private ChessPosition getKingPosition(ChessBoard board, TeamColor teamColor) {
@@ -159,11 +175,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        if (teamColor == TeamColor.WHITE) {
-            return isWhiteInCheck;
-        } else {
-            return isBlackInCheck;
-        }
+        return evaluateBoardForCheck(gameboard, teamColor);
     }
 
     /**
