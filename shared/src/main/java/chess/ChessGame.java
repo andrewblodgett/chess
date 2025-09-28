@@ -215,7 +215,6 @@ public class ChessGame {
         return gameboard.copy();
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -223,15 +222,13 @@ public class ChessGame {
         }
 
         ChessGame chessGame = (ChessGame) o;
-        return isWhitesTurn == chessGame.isWhitesTurn && isWhiteInCheck == chessGame.isWhiteInCheck && isBlackInCheck == chessGame.isBlackInCheck && Objects.equals(gameboard, chessGame.gameboard);
+        return isWhitesTurn == chessGame.isWhitesTurn && Objects.equals(gameboard, chessGame.gameboard);
     }
 
     @Override
     public int hashCode() {
         int result = Boolean.hashCode(isWhitesTurn);
         result = 31 * result + Objects.hashCode(gameboard);
-        result = 31 * result + Boolean.hashCode(isWhiteInCheck);
-        result = 31 * result + Boolean.hashCode(isBlackInCheck);
         return result;
     }
 
@@ -240,12 +237,6 @@ public class ChessGame {
         var s = gameboard.toString();
         s+="\n";
         s+= (isWhitesTurn) ? "White's turn" : "Black's turn";
-        if (isBlackInCheck) {
-            s+="\nBlack is in check.";
-        }
-        if (isWhiteInCheck) {
-            s+="\nWhite is in check";
-        }
         return s;
     }
 }
