@@ -137,18 +137,12 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         try {
             var startingPiece = gameboard.getPiece(move.getStartPosition());
-            if ((startingPiece.getTeamColor() == TeamColor.WHITE && isWhitesTurn) || (startingPiece.getTeamColor() == TeamColor.BLACK && !isWhitesTurn)) {
-                if (validMoves(move.getStartPosition()).contains(move)) {
-                    gameboard.movePiece(move);
-                    isWhitesTurn = !isWhitesTurn;
-
-                } else {
-                    throw new InvalidMoveException(move.toString() + " is an invalid move.");
-                }
+            if (((startingPiece.getTeamColor() == TeamColor.WHITE && isWhitesTurn) || (startingPiece.getTeamColor() == TeamColor.BLACK && !isWhitesTurn)) && validMoves(move.getStartPosition()).contains(move)){
+                gameboard.movePiece(move);
+                isWhitesTurn = !isWhitesTurn;
             } else {
                 throw new InvalidMoveException(move.toString() + " is an invalid move.");
             }
-
         } catch (Exception e) {
             throw new InvalidMoveException(move.toString() + " is an invalid move because " + e.toString());
         }
