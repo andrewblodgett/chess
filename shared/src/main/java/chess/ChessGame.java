@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -15,12 +16,13 @@ public class ChessGame {
 
     private boolean isWhitesTurn;
     private ChessBoard gameboard;
-
+    private ArrayList<ChessBoard> history;
 
     public ChessGame() {
         gameboard = new ChessBoard();
         gameboard.resetBoard();
         isWhitesTurn = true;
+        history.add(gameboard);
     }
 
 
@@ -137,6 +139,8 @@ public class ChessGame {
             if (((startingPiece.getTeamColor() == TeamColor.WHITE && isWhitesTurn) || (startingPiece.getTeamColor() == TeamColor.BLACK && !isWhitesTurn)) && validMoves(move.getStartPosition()).contains(move)){
                 gameboard.movePiece(move);
                 isWhitesTurn = !isWhitesTurn;
+
+                history.add(gameboard);
             } else {
                 throw new InvalidMoveException(move.toString() + " is an invalid move.");
             }
@@ -157,6 +161,16 @@ public class ChessGame {
             }
         }
         return new ChessPosition(0,0);
+    }
+
+    private boolean canKingCastle(TeamColor teamColor, boolean isRightSide) {
+        for (var board : history) {
+            // go through board and see if king or rook have moved
+            if (!((board.getPiece(new ChessPosition(1,5)).getPieceType() != ChessPiece.PieceType.KING && board.getPiece(new ChessPosition(1,5)).getTeamColor() != TeamColor.WHITE) &&(board.getPiece(new ChessPosition(1,1)).getPieceType() != ChessPiece.PieceType.ROOK && board.getPiece(new ChessPosition(1,1)).getTeamColor() != TeamColor.WHITE))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
