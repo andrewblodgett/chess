@@ -150,7 +150,7 @@ public class ChessGame {
             }
 
         } catch (Exception e) {
-            throw new InvalidMoveException(move.toString() + " is an invalid move.");
+            throw new InvalidMoveException(move.toString() + " is an invalid move because " + e.toString());
         }
     }
 
@@ -165,7 +165,7 @@ public class ChessGame {
                 }
             }
         }
-        return null;
+        return new ChessPosition(0,0);
     }
 
     /**
@@ -186,6 +186,7 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         if (isInCheck(teamColor)) {
+            return allValidMovesForTeam(teamColor).isEmpty();
         }
         return false;
 
@@ -200,6 +201,7 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         if (!isInCheck(teamColor)) {
+            return allValidMovesForTeam(teamColor).isEmpty();
         }
         return false;
     }
