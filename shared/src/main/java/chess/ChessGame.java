@@ -163,7 +163,16 @@ public class ChessGame {
         return new ChessPosition(0,0);
     }
 
-    private boolean canKingCastle(TeamColor teamColor, boolean isRightSide) {
+    private boolean canWhiteKingCastleRight() {
+        for (var board : history) {
+            // go through board and see if king or rook have moved
+            if (!((board.getPiece(new ChessPosition(1,5)).getPieceType() != ChessPiece.PieceType.KING && board.getPiece(new ChessPosition(1,5)).getTeamColor() != TeamColor.WHITE) &&(board.getPiece(new ChessPosition(1,8)).getPieceType() != ChessPiece.PieceType.ROOK && board.getPiece(new ChessPosition(1,8)).getTeamColor() != TeamColor.WHITE))) {
+                return false;
+            }
+        }
+        return true;
+    }
+    private boolean canWhiteKingCastleLeft() {
         for (var board : history) {
             // go through board and see if king or rook have moved
             if (!((board.getPiece(new ChessPosition(1,5)).getPieceType() != ChessPiece.PieceType.KING && board.getPiece(new ChessPosition(1,5)).getTeamColor() != TeamColor.WHITE) &&(board.getPiece(new ChessPosition(1,1)).getPieceType() != ChessPiece.PieceType.ROOK && board.getPiece(new ChessPosition(1,1)).getTeamColor() != TeamColor.WHITE))) {
@@ -172,6 +181,7 @@ public class ChessGame {
         }
         return true;
     }
+
 
     /**
      * Determines if the given team is in check
