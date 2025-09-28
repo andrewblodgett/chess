@@ -15,15 +15,12 @@ public class ChessGame {
 
     private boolean isWhitesTurn;
     private ChessBoard gameboard;
-    private boolean isWhiteInCheck;
-    private boolean isBlackInCheck;
+
 
     public ChessGame() {
         gameboard = new ChessBoard();
         gameboard.resetBoard();
         isWhitesTurn = true;
-        isWhiteInCheck = false;
-        isBlackInCheck = false;
     }
 
 
