@@ -75,6 +75,12 @@ public class ChessGame {
         var startPiece = gameboard.getPiece(startPosition);
         var validMoves = new HashSet<ChessMove>();
         var possibleMoves = startPiece.pieceMoves(gameboard, startPosition);
+        if (startPiece.getPieceType() == ChessPiece.PieceType.KING) {
+            possibleMoves.addAll(allCastleMoves(startPiece.getTeamColor()));
+        }
+        if (startPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            possibleMoves.addAll(enPassant(startPosition));
+        }
         for (var potentialMove : possibleMoves) {
             var potentialBoard = gameboard.copy();
             potentialBoard.movePiece(potentialMove);
@@ -82,12 +88,12 @@ public class ChessGame {
                 validMoves.add(potentialMove);
             }
         }
-        if (startPiece.getPieceType() == ChessPiece.PieceType.KING) {
-            validMoves.addAll(allCastleMoves(startPiece.getTeamColor()));
-        }
-        if (startPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
-            validMoves.addAll(enPassant(startPosition));
-        }
+//        if (startPiece.getPieceType() == ChessPiece.PieceType.KING) {
+//            validMoves.addAll(allCastleMoves(startPiece.getTeamColor()));
+//        }
+//        if (startPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
+//            validMoves.addAll(enPassant(startPosition));
+//        }
         return validMoves;
     }
 
@@ -188,10 +194,13 @@ public class ChessGame {
     }
     private Collection<ChessMove> allCastleMoves(TeamColor teamColor) {
         var possibleCastles = new HashSet<ChessMove>();
-        if (!evaluateBoardForCheck(gameboard, teamColor)) {
-            possibleCastles.addAll(possibleCastlingMovesRight(teamColor));
-            possibleCastles.addAll(possibleCastlingMovesLeft(teamColor));
+        if (getKingPosition(gameboard, teamColor).equals(new ChessPosition(1,5)) || getKingPosition(gameboard, teamColor).equals(new ChessPosition(8,5))){
+            if (!evaluateBoardForCheck(gameboard, teamColor)) {
+                possibleCastles.addAll(possibleCastlingMovesRight(teamColor));
+                possibleCastles.addAll(possibleCastlingMovesLeft(teamColor));
+            }
         }
+
         return possibleCastles;
     }
 
