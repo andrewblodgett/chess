@@ -22,7 +22,7 @@ public class ChessGame {
         gameboard = new ChessBoard();
         gameboard.resetBoard();
         isWhitesTurn = true;
-        history.add(gameboard);
+        history = new ArrayList<ChessBoard>();
     }
 
 
@@ -82,6 +82,9 @@ public class ChessGame {
                 validMoves.add(potentialMove);
             }
         }
+        if (startPiece.getPieceType() == ChessPiece.PieceType.KING) {
+            validMoves.addAll(allCastleMoves(startPiece.getTeamColor()));
+        }
         return validMoves;
     }
 
@@ -137,10 +140,17 @@ public class ChessGame {
         try {
             var startingPiece = gameboard.getPiece(move.getStartPosition());
             if (((startingPiece.getTeamColor() == TeamColor.WHITE && isWhitesTurn) || (startingPiece.getTeamColor() == TeamColor.BLACK && !isWhitesTurn)) && validMoves(move.getStartPosition()).contains(move)){
+                history.add(gameboard);
+                //check if we need to move rook after king moves for a castle
+                if (startingPiece.getPieceType() == ChessPiece.PieceType.KING) {
+                    if (move.getStartPosition().getColumn() - move.getEndPosition().getColumn() == -2) {
+                        gameboard.movePiece(new ChessMove(new ChessPosition(move.getStartPosition().getRow(), 8) ,new ChessPosition(move.getStartPosition().getRow(), 6),null ));
+                    } else if (move.getStartPosition().getColumn() - move.getEndPosition().getColumn() == 2) {
+                        gameboard.movePiece(new ChessMove(new ChessPosition(move.getStartPosition().getRow(), 1) ,new ChessPosition(move.getStartPosition().getRow(), 4),null ));
+                    }
+                }
                 gameboard.movePiece(move);
                 isWhitesTurn = !isWhitesTurn;
-
-                history.add(gameboard);
             } else {
                 throw new InvalidMoveException(move.toString() + " is an invalid move.");
             }
@@ -162,26 +172,72 @@ public class ChessGame {
         }
         return new ChessPosition(0,0);
     }
-
-    private boolean canWhiteKingCastleRight() {
-        for (var board : history) {
-            // go through board and see if king or rook have moved
-            if (!((board.getPiece(new ChessPosition(1,5)).getPieceType() != ChessPiece.PieceType.KING && board.getPiece(new ChessPosition(1,5)).getTeamColor() != TeamColor.WHITE) &&(board.getPiece(new ChessPosition(1,8)).getPieceType() != ChessPiece.PieceType.ROOK && board.getPiece(new ChessPosition(1,8)).getTeamColor() != TeamColor.WHITE))) {
-                return false;
-            }
+    private Collection<ChessMove> allCastleMoves(TeamColor teamColor) {
+        var possibleCastles = new HashSet<ChessMove>();
+        if (!evaluateBoardForCheck(gameboard, teamColor)) {
+            possibleCastles.addAll(possibleCastlingMovesRight(teamColor));
+            possibleCastles.addAll(possibleCastlingMovesLeft(teamColor));
         }
-        return true;
-    }
-    private boolean canWhiteKingCastleLeft() {
-        for (var board : history) {
-            // go through board and see if king or rook have moved
-            if (!((board.getPiece(new ChessPosition(1,5)).getPieceType() != ChessPiece.PieceType.KING && board.getPiece(new ChessPosition(1,5)).getTeamColor() != TeamColor.WHITE) &&(board.getPiece(new ChessPosition(1,1)).getPieceType() != ChessPiece.PieceType.ROOK && board.getPiece(new ChessPosition(1,1)).getTeamColor() != TeamColor.WHITE))) {
-                return false;
-            }
-        }
-        return true;
+        return possibleCastles;
     }
 
+    private Collection<ChessMove> possibleCastlingMovesRight(TeamColor teamColor) {
+        var row = (teamColor == TeamColor.WHITE) ? 1 : 8;
+        var possibleCastles = new HashSet<ChessMove>();
+        // First check that the adjacent spaces are empty
+        if (gameboard.getPiece(new ChessPosition(row,6)) != null || gameboard.getPiece(new ChessPosition(row,7)) != null) {
+            return possibleCastles;
+        }
+        // Check if the king will have to move through check
+        var potentialBoard = gameboard.copy();
+        potentialBoard.movePiece(new ChessMove(new ChessPosition(row,5), new ChessPosition(row, 6), null));
+        if (evaluateBoardForCheck(potentialBoard, teamColor)){
+            return possibleCastles;
+        }
+        potentialBoard.movePiece(new ChessMove(new ChessPosition(row,6), new ChessPosition(row, 7), null));
+        if (evaluateBoardForCheck(potentialBoard, teamColor)) {
+            return possibleCastles;
+        }
+        // go through board and see if king or rook have moved
+
+        for (var board : history) {
+            if (!((board.getPiece(new ChessPosition(row,5)).getPieceType() != ChessPiece.PieceType.KING && board.getPiece(new ChessPosition(row,5)).getTeamColor() != teamColor) &&(board.getPiece(new ChessPosition(row,8)).getPieceType() != ChessPiece.PieceType.ROOK && board.getPiece(new ChessPosition(row,8)).getTeamColor() != teamColor))) {
+                return possibleCastles;
+            }
+        }
+
+
+        possibleCastles.add(new ChessMove(new ChessPosition(row,5), new ChessPosition(row, 7), null));
+        return possibleCastles;
+    }
+
+    private Collection<ChessMove> possibleCastlingMovesLeft(TeamColor teamColor) {
+        var row = (teamColor == TeamColor.WHITE) ? 1 : 8;
+        var possibleCastles = new HashSet<ChessMove>();
+        // First check that the adjacent spaces are empty
+        if (gameboard.getPiece(new ChessPosition(row,4)) != null || gameboard.getPiece(new ChessPosition(row,3)) != null) {
+            return possibleCastles;
+        }
+        // Check if the king will have to move through check
+        var potentialBoard = gameboard.copy();
+        potentialBoard.movePiece(new ChessMove(new ChessPosition(row,5), new ChessPosition(row, 4), null));
+        if (evaluateBoardForCheck(potentialBoard, teamColor)){
+            return possibleCastles;
+        }
+        potentialBoard.movePiece(new ChessMove(new ChessPosition(row,4), new ChessPosition(row, 3), null));
+        if (evaluateBoardForCheck(potentialBoard, teamColor)) {
+            return possibleCastles;
+        }
+        // go through board and see if king or rook have moved
+        for (var board : history) {
+            if (!((board.getPiece(new ChessPosition(row,5)).getPieceType() != ChessPiece.PieceType.KING && board.getPiece(new ChessPosition(row,5)).getTeamColor() != teamColor) &&(board.getPiece(new ChessPosition(row,1)).getPieceType() != ChessPiece.PieceType.ROOK && board.getPiece(new ChessPosition(row,1)).getTeamColor() != teamColor))) {
+                return possibleCastles;
+            }
+        }
+
+        possibleCastles.add(new ChessMove(new ChessPosition(row,5), new ChessPosition(row, 3), null));
+        return possibleCastles;
+    }
 
     /**
      * Determines if the given team is in check
