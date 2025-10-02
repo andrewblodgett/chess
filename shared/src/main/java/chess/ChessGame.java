@@ -140,7 +140,7 @@ public class ChessGame {
         try {
             var startingPiece = gameboard.getPiece(move.getStartPosition());
             if (((startingPiece.getTeamColor() == TeamColor.WHITE && isWhitesTurn) || (startingPiece.getTeamColor() == TeamColor.BLACK && !isWhitesTurn)) && validMoves(move.getStartPosition()).contains(move)){
-                history.add(gameboard);
+                history.add(gameboard.copy());
                 //check if we need to move rook after king moves for a castle
                 if (startingPiece.getPieceType() == ChessPiece.PieceType.KING) {
                     if (move.getStartPosition().getColumn() - move.getEndPosition().getColumn() == -2) {
@@ -184,6 +184,12 @@ public class ChessGame {
     private Collection<ChessMove> possibleCastlingMovesRight(TeamColor teamColor) {
         var row = (teamColor == TeamColor.WHITE) ? 1 : 8;
         var possibleCastles = new HashSet<ChessMove>();
+        // Check if king is in his starting square
+        if (gameboard.getPiece(new ChessPosition(row, 5)) != null) {
+            if (gameboard.getPiece(new ChessPosition(row, 5)).getPieceType() != ChessPiece.PieceType.KING) {
+                return possibleCastles;
+            }
+        }
         // First check that the adjacent spaces are empty
         if (gameboard.getPiece(new ChessPosition(row,6)) != null || gameboard.getPiece(new ChessPosition(row,7)) != null) {
             return possibleCastles;
@@ -201,9 +207,20 @@ public class ChessGame {
         // go through board and see if king or rook have moved
 
         for (var board : history) {
-            if (!((board.getPiece(new ChessPosition(row,5)).getPieceType() != ChessPiece.PieceType.KING && board.getPiece(new ChessPosition(row,5)).getTeamColor() != teamColor) &&(board.getPiece(new ChessPosition(row,8)).getPieceType() != ChessPiece.PieceType.ROOK && board.getPiece(new ChessPosition(row,8)).getTeamColor() != teamColor))) {
+            var whereKingShouldBe = board.getPiece(new ChessPosition(row,5));
+            var whereRookShouldBe = board.getPiece(new ChessPosition(row,8));
+            if (whereKingShouldBe == null || whereRookShouldBe == null) {
                 return possibleCastles;
             }
+            if (whereKingShouldBe.getPieceType() != ChessPiece.PieceType.KING || whereKingShouldBe.getTeamColor() != teamColor) {
+                return possibleCastles;
+            }
+            if (whereRookShouldBe.getPieceType() != ChessPiece.PieceType.ROOK || whereRookShouldBe.getTeamColor() != teamColor) {
+                return possibleCastles;
+            }
+//            if (board.getPiece(new ChessPosition(row,5)) != null && !((board.getPiece(new ChessPosition(row,5)).getPieceType() != ChessPiece.PieceType.KING && board.getPiece(new ChessPosition(row,5)).getTeamColor() != teamColor) &&(board.getPiece(new ChessPosition(row,8)).getPieceType() != ChessPiece.PieceType.ROOK && board.getPiece(new ChessPosition(row,8)).getTeamColor() != teamColor))) {
+//                return possibleCastles;
+//            }
         }
 
 
@@ -214,6 +231,12 @@ public class ChessGame {
     private Collection<ChessMove> possibleCastlingMovesLeft(TeamColor teamColor) {
         var row = (teamColor == TeamColor.WHITE) ? 1 : 8;
         var possibleCastles = new HashSet<ChessMove>();
+        // Check if king is in his starting square
+        if (gameboard.getPiece(new ChessPosition(row, 5)) != null) {
+            if (gameboard.getPiece(new ChessPosition(row, 5)).getPieceType() != ChessPiece.PieceType.KING) {
+                return possibleCastles;
+            }
+        }
         // First check that the adjacent spaces are empty
         if (gameboard.getPiece(new ChessPosition(row,4)) != null || gameboard.getPiece(new ChessPosition(row,3)) != null) {
             return possibleCastles;
@@ -230,9 +253,20 @@ public class ChessGame {
         }
         // go through board and see if king or rook have moved
         for (var board : history) {
-            if (!((board.getPiece(new ChessPosition(row,5)).getPieceType() != ChessPiece.PieceType.KING && board.getPiece(new ChessPosition(row,5)).getTeamColor() != teamColor) &&(board.getPiece(new ChessPosition(row,1)).getPieceType() != ChessPiece.PieceType.ROOK && board.getPiece(new ChessPosition(row,1)).getTeamColor() != teamColor))) {
+            var whereKingShouldBe = board.getPiece(new ChessPosition(row,5));
+            var whereRookShouldBe = board.getPiece(new ChessPosition(row,1));
+            if (whereKingShouldBe == null || whereRookShouldBe == null) {
                 return possibleCastles;
             }
+            if (whereKingShouldBe.getPieceType() != ChessPiece.PieceType.KING || whereKingShouldBe.getTeamColor() != teamColor) {
+                return possibleCastles;
+            }
+            if (whereRookShouldBe.getPieceType() != ChessPiece.PieceType.ROOK || whereRookShouldBe.getTeamColor() != teamColor) {
+                return possibleCastles;
+            }
+//            if (board.getPiece(new ChessPosition(row,5)) != null && !((board.getPiece(new ChessPosition(row,5)).getPieceType() != ChessPiece.PieceType.KING && board.getPiece(new ChessPosition(row,5)).getTeamColor() != teamColor) &&(board.getPiece(new ChessPosition(row,1)).getPieceType() != ChessPiece.PieceType.ROOK && board.getPiece(new ChessPosition(row,1)).getTeamColor() != teamColor))) {
+//                return possibleCastles;
+//            }
         }
 
         possibleCastles.add(new ChessMove(new ChessPosition(row,5), new ChessPosition(row, 3), null));
