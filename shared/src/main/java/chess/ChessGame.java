@@ -85,6 +85,9 @@ public class ChessGame {
         if (startPiece.getPieceType() == ChessPiece.PieceType.KING) {
             validMoves.addAll(allCastleMoves(startPiece.getTeamColor()));
         }
+        if (startPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            validMoves.addAll(enPassant(startPosition));
+        }
         return validMoves;
     }
 
@@ -140,6 +143,17 @@ public class ChessGame {
         try {
             var startingPiece = gameboard.getPiece(move.getStartPosition());
             if (((startingPiece.getTeamColor() == TeamColor.WHITE && isWhitesTurn) || (startingPiece.getTeamColor() == TeamColor.BLACK && !isWhitesTurn)) && validMoves(move.getStartPosition()).contains(move)){
+                if (startingPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
+                    if (!enPassant(move.getStartPosition()).isEmpty()) {
+                        for (var ep : enPassant(move.getStartPosition())) {
+                            if (ep.getEndPosition().equals(move.getEndPosition())) {
+                                var pawnBehindVector = (startingPiece.getTeamColor() == TeamColor.BLACK) ? 1 : -1;
+                                gameboard.addPiece(new ChessPosition(move.getEndPosition().getRow()+pawnBehindVector, move.getEndPosition().getColumn()), null);
+                            }
+                        }
+                    }
+                }
+
                 history.add(gameboard.copy());
                 //check if we need to move rook after king moves for a castle
                 if (startingPiece.getPieceType() == ChessPiece.PieceType.KING) {
@@ -152,8 +166,8 @@ public class ChessGame {
                 gameboard.movePiece(move);
                 isWhitesTurn = !isWhitesTurn;
             } else {
-                throw new InvalidMoveException(move.toString() + " is an invalid move.");
-            }
+                    throw new InvalidMoveException(move.toString() + " is an invalid move.");
+                }
         } catch (Exception e) {
             throw new InvalidMoveException(move.toString() + " is an invalid move because " + e.toString());
         }
@@ -272,6 +286,54 @@ public class ChessGame {
         possibleCastles.add(new ChessMove(new ChessPosition(row,5), new ChessPosition(row, 3), null));
         return possibleCastles;
     }
+
+
+
+    private Collection<ChessMove> enPassant(ChessPosition startPosition) {
+        var possibleEnPassant = new HashSet<ChessMove>();
+        var pawn = gameboard.getPiece(startPosition);
+        if (!history.isEmpty()) {
+            var lastturnboard = history.getLast();
+            var enemyColor = otherTeam(pawn.getTeamColor());
+            var directionVector = (pawn.getTeamColor() == TeamColor.WHITE) ? 1 : -1;
+            if (startPosition.getRow() == 4 || startPosition.getRow() == 5) {
+                if (startPosition.getColumn() < 8) {
+                    var potentialLastMovedPawn = lastturnboard.getPiece(new ChessPosition(startPosition.getRow()+2*directionVector, startPosition.getColumn()+1));
+                    if (potentialLastMovedPawn != null) {
+                        if (potentialLastMovedPawn.getPieceType() == ChessPiece.PieceType.PAWN && potentialLastMovedPawn.getTeamColor() == enemyColor) {
+                            var movedPawn = gameboard.getPiece(new ChessPosition(startPosition.getRow(), startPosition.getColumn()+1));
+                            if (movedPawn != null) {
+                                if (movedPawn.getPieceType() == ChessPiece.PieceType.PAWN && movedPawn.getTeamColor() == enemyColor) {
+                                    possibleEnPassant.add(new ChessMove(startPosition, new ChessPosition(startPosition.getRow()+directionVector, startPosition.getColumn()+1), null));
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+                if (startPosition.getColumn() > 1) {
+                    var potentialLastMovedPawn = lastturnboard.getPiece(new ChessPosition(startPosition.getRow()+2*directionVector, startPosition.getColumn()-1));
+                    if (potentialLastMovedPawn != null) {
+                        if (potentialLastMovedPawn.getPieceType() == ChessPiece.PieceType.PAWN && potentialLastMovedPawn.getTeamColor() == enemyColor) {
+                            var movedPawn = gameboard.getPiece(new ChessPosition(startPosition.getRow(), startPosition.getColumn()-1));
+                            if (movedPawn != null) {
+                                if (movedPawn.getPieceType() == ChessPiece.PieceType.PAWN && movedPawn.getTeamColor() == enemyColor) {
+                                    possibleEnPassant.add(new ChessMove(startPosition, new ChessPosition(startPosition.getRow()+directionVector, startPosition.getColumn()-1), null));
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+            }
+
+
+        }
+        return possibleEnPassant;
+    }
+
 
     /**
      * Determines if the given team is in check
