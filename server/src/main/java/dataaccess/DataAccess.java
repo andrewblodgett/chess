@@ -16,15 +16,18 @@ deleteAuth: Delete an authorization so that it is no longer valid
 
 import datamodel.AuthData;
 import datamodel.GameData;
+import datamodel.UserData;
 
 import java.util.Collection;
 
 public interface DataAccess {
     void clear();
 
-    void createUser();
+    void createUser(UserData user);
 
-    void createGame();
+    UserData getUser(UserData user);
+
+    void createGame(GameData game);
 
     GameData getGame(int gameID);
 
@@ -32,7 +35,7 @@ public interface DataAccess {
 
     void updateGame(int gameID);
 
-    AuthData createAuth();
+    void createAuth(AuthData authData);
 
     void deleteAuth();
 }

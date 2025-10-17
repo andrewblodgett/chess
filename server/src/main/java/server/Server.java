@@ -1,14 +1,20 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccess;
+import dataaccess.MemoryDataAccess;
+import datamodel.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
+import service.UserService;
 
 import java.util.Map;
 
 public class Server {
 
     private final Javalin server;
+    private final DataAccess dataAccess = new MemoryDataAccess();
+    private final UserService userService = new UserService(dataAccess);
 
     public Server() {
         server = Javalin.create(config -> config.staticFiles.add("web"));
@@ -26,9 +32,9 @@ public class Server {
     private void register(Context ctx) {
         var serializer = new Gson();
 
-        var request = serializer.fromJson(ctx.body(), Map.class);
-        request.put("authToken", "yeet");
-        var response = serializer.toJson(request);
+        var requestedUser = serializer.fromJson(ctx.body(), UserData.class);
+        var authData = userService.register(requestedUser);
+        var response = serializer.toJson(authData);
         ctx.result(response);
     }
 
@@ -40,7 +46,7 @@ public class Server {
         ctx.result(response);
     }
 
-    private void logout(Context ctx){
+    private void logout(Context ctx) {
         var serializer = new Gson();
 //        var request = serializer.fromJson(ctx.body(), Map.class);
 //        request.put("authToken", "yeet");
