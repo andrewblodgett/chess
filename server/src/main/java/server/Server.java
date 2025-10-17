@@ -8,6 +8,7 @@ import datamodel.AuthData;
 import datamodel.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
+import service.UnauthorizedException;
 import service.UserAlreadyRegisteredException;
 import service.UserService;
 
@@ -23,7 +24,7 @@ public class Server {
 
     public Server() {
         server = Javalin.create(config -> config.staticFiles.add("web"));
-        server.delete("db", ctx -> ctx.result("{}"));
+        server.delete("db", this::clear);
         server.post("user", this::register);
         server.post("session", this::login);
         server.delete("session", this::logout);
@@ -31,6 +32,10 @@ public class Server {
         server.put("game", this::joinGame);
         server.get("game", this::listGames);
 
+    }
+
+    private void clear(Context ctx) {
+        userService.clear();
     }
 
     private void register(Context ctx) {
@@ -62,18 +67,51 @@ public class Server {
 
     private void login(Context ctx) {
         var serializer = new Gson();
-        var request = serializer.fromJson(ctx.body(), Map.class);
-        request.put("authToken", "yeet");
-        var response = serializer.toJson(request);
+        var requestedUser = serializer.fromJson(ctx.body(), UserData.class);
+        var response = "";
+        if (requestedUser.password() == null || requestedUser.username() == null) {
+            response = ERROR_RESPONSE;
+            ctx.status(400);
+        } else {
+            try {
+                var authData = userService.login(requestedUser);
+                response = serializer.toJson(authData, AuthData.class);
+
+            } catch (UnauthorizedException e) {
+                response = "{ \"message\": \"Error: unauthorized\" }";
+                ctx.status(401);
+            } catch (Exception e) {
+                response = ERROR_RESPONSE;
+                ctx.status(400);
+            }
+
+        }
         ctx.result(response);
     }
 
     private void logout(Context ctx) {
         var serializer = new Gson();
-//        var request = serializer.fromJson(ctx.body(), Map.class);
-//        request.put("authToken", "yeet");
-//        var response = serializer.toJson();
-        ctx.result("{\"authToken\":\"yeet\"}");
+        var authToken = ctx.header("authorization");
+//        System.out.println("body:" + ctx.body());
+
+        var response = "";
+        if (authToken == null) {
+            response = ERROR_RESPONSE;
+            ctx.status(400);
+        } else {
+            try {
+                userService.logout(authToken);
+
+            } catch (UnauthorizedException e) {
+                response = "{ \"message\": \"Error: unauthorized\" }";
+                ctx.status(401);
+            } catch (Exception e) {
+                response = ERROR_RESPONSE;
+                ctx.status(400);
+            }
+
+        }
+        ctx.result(response);
     }
 
     private void createGame(Context ctx) {

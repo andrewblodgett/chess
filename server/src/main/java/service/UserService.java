@@ -15,13 +15,35 @@ public class UserService {
     }
 
     public AuthData register(UserData user) {
-        if (dataAccess.getUser(user) != null) {
+        if (dataAccess.getUser(user.username()) != null) {
             throw new UserAlreadyRegisteredException("Username is already taken");
         }
         dataAccess.createUser(user);
         var authData = new AuthData(generateAuthToken(), user.username());
         dataAccess.createAuth(authData);
         return authData;
+    }
+
+    public AuthData login(UserData user) {
+        var storedUserData = dataAccess.getUser(user.username());
+        if (storedUserData == null) {
+            throw new UnauthorizedException("User does not exist");
+
+        }
+        if (!storedUserData.password().equals(user.password())) {
+            throw new UnauthorizedException("Password does not match");
+        }
+        var authData = new AuthData(generateAuthToken(), user.username());
+        dataAccess.createAuth(authData);
+        return authData;
+    }
+
+    public void logout(String authToken) {
+        dataAccess.deleteAuth(authToken);
+    }
+
+    public void clear() {
+        dataAccess.clear();
     }
 
     private String generateAuthToken() {

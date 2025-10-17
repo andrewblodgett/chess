@@ -25,7 +25,7 @@ public interface DataAccess {
 
     void createUser(UserData user);
 
-    UserData getUser(UserData user);
+    UserData getUser(String username);
 
     void createGame(GameData game);
 
@@ -37,5 +37,5 @@ public interface DataAccess {
 
     void createAuth(AuthData authData);
 
-    void deleteAuth();
+    void deleteAuth(String authToken);
 }
