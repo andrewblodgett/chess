@@ -1,11 +1,14 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
+import datamodel.AuthData;
 import datamodel.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
+import service.UserAlreadyRegisteredException;
 import service.UserService;
 
 import java.util.Map;
@@ -16,6 +19,8 @@ public class Server {
     private final DataAccess dataAccess = new MemoryDataAccess();
     private final UserService userService = new UserService(dataAccess);
 
+    private final String ERROR_RESPONSE = "{ \"message\": \"Error: bad request\" }";
+
     public Server() {
         server = Javalin.create(config -> config.staticFiles.add("web"));
         server.delete("db", ctx -> ctx.result("{}"));
@@ -25,17 +30,34 @@ public class Server {
         server.post("game", this::createGame);
         server.put("game", this::joinGame);
         server.get("game", this::listGames);
-        // Register your endpoints and exception handlers here.
 
     }
 
     private void register(Context ctx) {
         var serializer = new Gson();
+        var response = "";
+
 
         var requestedUser = serializer.fromJson(ctx.body(), UserData.class);
-        var authData = userService.register(requestedUser);
-        var response = serializer.toJson(authData);
+        if (requestedUser.email() == null || requestedUser.password() == null || requestedUser.username() == null) {
+            response = ERROR_RESPONSE;
+            ctx.status(400);
+        } else {
+            try {
+                var authData = userService.register(requestedUser);
+                response = serializer.toJson(authData, AuthData.class);
+
+            } catch (UserAlreadyRegisteredException e) {
+                response = "{ \"message\": \"Error: already taken\" }";
+                ctx.status(403);
+            } catch (Exception e) {
+                response = ERROR_RESPONSE;
+                ctx.status(400);
+            }
+
+        }
         ctx.result(response);
+
     }
 
     private void login(Context ctx) {
