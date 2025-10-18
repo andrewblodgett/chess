@@ -2,16 +2,19 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.internal.LinkedTreeMap;
 import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
 import datamodel.AuthData;
+import datamodel.GameData;
+import datamodel.JoinGameRequest;
 import datamodel.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
-import service.UnauthorizedException;
-import service.UserAlreadyRegisteredException;
-import service.UserService;
+import service.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class Server {
@@ -19,6 +22,7 @@ public class Server {
     private final Javalin server;
     private final DataAccess dataAccess = new MemoryDataAccess();
     private final UserService userService = new UserService(dataAccess);
+    private final GameService gameService = new GameService(dataAccess);
 
     private final String ERROR_RESPONSE = "{ \"message\": \"Error: bad request\" }";
 
@@ -92,7 +96,6 @@ public class Server {
     private void logout(Context ctx) {
         var serializer = new Gson();
         var authToken = ctx.header("authorization");
-//        System.out.println("body:" + ctx.body());
 
         var response = "";
         if (authToken == null) {
@@ -115,15 +118,86 @@ public class Server {
     }
 
     private void createGame(Context ctx) {
-        ctx.result("{\"gameID\":1234}");
+        var serializer = new Gson();
+        var requestedGameName = serializer.fromJson(ctx.body(), GameData.class).gameName();
+        var authToken = ctx.header("authorization");
+        var response = "";
+        if (requestedGameName == null) {
+            response = ERROR_RESPONSE;
+            ctx.status(400);
+        } else {
+            try {
+                var newGame = gameService.createGame(authToken, requestedGameName);
+                response = "{\"gameID\":" + Integer.toString(newGame.gameID()) + "}";
+
+            } catch (UnauthorizedException e) {
+                response = "{ \"message\": \"Error: unauthorized\" }";
+                ctx.status(401);
+            } catch (Exception e) {
+                response = ERROR_RESPONSE;
+                ctx.status(400);
+            }
+
+        }
+        ctx.result(response);
     }
 
     private void joinGame(Context ctx) {
-        ctx.result("{}");
+        var serializer = new Gson();
+        var request = serializer.fromJson(ctx.body(), JoinGameRequest.class);
+        var authToken = ctx.header("authorization");
+        var response = "";
+        var validColors = new ArrayList<String>();
+        validColors.add("WHITE");
+        validColors.add("BLACK");
+        if (request == null || !validColors.contains(request.playerColor())) {
+            response = ERROR_RESPONSE;
+            ctx.status(400);
+        } else {
+            try {
+                gameService.joinGame(authToken, request.gameID(), request.playerColor());
+            } catch (UnauthorizedException e) {
+                response = "{ \"message\": \"Error: unauthorized\" }";
+                ctx.status(401);
+            } catch (ColorAlreadyTakenException e) {
+                response = "{ \"message\": \"Error: already taken\" }";
+                ctx.status(403);
+            } catch (Exception e) {
+                response = ERROR_RESPONSE;
+                ctx.status(400);
+            }
+
+        }
+        ctx.result(response);
     }
 
     private void listGames(Context ctx) {
-        ctx.result("{\"games\":[]}");
+        var serializer = new Gson();
+        var authToken = ctx.header("authorization");
+        var response = "";
+        if (authToken == null) {
+            response = ERROR_RESPONSE;
+            ctx.status(400);
+        } else {
+            try {
+                var collectionOfGames = gameService.listGames(authToken);
+                response += "{\"games\":[";
+                var serializedGameInfo = new ArrayList<String>();
+                for (var game : collectionOfGames) {
+                    serializedGameInfo.add("{\"gameID\":" + Integer.toString(game.gameID()) + ", \"whiteUsername\":" + (game.whiteUsername() != null ? ("\"" + game.whiteUsername() + "\"") : null) + ", \"blackUsername\":" + (game.blackUsername() != null ? ("\"" + game.blackUsername() + "\"") : null) + ", \"gameName\":\"" + game.gameName() + "\"}");
+                }
+                response += String.join(",", serializedGameInfo) + "]}";
+
+            } catch (UnauthorizedException e) {
+                response = "{ \"message\": \"Error: unauthorized\" }";
+                ctx.status(401);
+            } catch (Exception e) {
+                response = ERROR_RESPONSE;
+                ctx.status(400);
+            }
+
+        }
+        ctx.result(response);
     }
 
     public int run(int desiredPort) {

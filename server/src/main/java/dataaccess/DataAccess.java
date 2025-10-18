@@ -29,13 +29,15 @@ public interface DataAccess {
 
     void createGame(GameData game);
 
-    GameData getGame(int gameID);
+    GameData getGame(int gameID) throws DataAccessException;
 
     Collection<GameData> listGames();
 
-    void updateGame(int gameID);
+    void updateGame(GameData game);
 
     void createAuth(AuthData authData);
 
     void deleteAuth(String authToken);
+
+    AuthData getAuth(String authToken);
 }

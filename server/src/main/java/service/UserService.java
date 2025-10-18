@@ -28,7 +28,6 @@ public class UserService {
         var storedUserData = dataAccess.getUser(user.username());
         if (storedUserData == null) {
             throw new UnauthorizedException("User does not exist");
-
         }
         if (!storedUserData.password().equals(user.password())) {
             throw new UnauthorizedException("Password does not match");

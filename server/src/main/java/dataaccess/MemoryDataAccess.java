@@ -46,22 +46,29 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void createGame(GameData game) {
-
+        gameDataSet.add(game);
     }
 
     @Override
-    public GameData getGame(int gameID) {
-        return null;
+    public GameData getGame(int gameID) throws DataAccessException {
+        for (var g : gameDataSet) {
+            if (g.gameID() == gameID) {
+                return g;
+            }
+        }
+        throw new DataAccessException("Game ID is invalid");
+
     }
 
     @Override
     public Collection<GameData> listGames() {
-        return List.of();
+        return gameDataSet;
     }
 
     @Override
-    public void updateGame(int gameID) {
-
+    public void updateGame(GameData game) {
+        gameDataSet.removeIf(g -> g.gameID() == game.gameID());
+        gameDataSet.add(game);
     }
 
     @Override
@@ -82,5 +89,14 @@ public class MemoryDataAccess implements DataAccess {
             throw new UnauthorizedException("The given authToken is invalid");
         }
         authDataSet.remove(authData);
+    }
+
+    public AuthData getAuth(String authToken) {
+        for (var a : authDataSet) {
+            if (a.authToken().equals(authToken)) {
+                return a;
+            }
+        }
+        throw new UnauthorizedException("Authtoken is invalid");
     }
 }
