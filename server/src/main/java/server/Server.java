@@ -24,7 +24,7 @@ public class Server {
     private final UserService userService = new UserService(dataAccess);
     private final GameService gameService = new GameService(dataAccess);
 
-    private final String ERROR_RESPONSE = "{ \"message\": \"Error: bad request\" }";
+    private final static String ERROR_RESPONSE = "{ \"message\": \"Error: bad request\" }";
 
     public Server() {
         server = Javalin.create(config -> config.staticFiles.add("web"));
@@ -184,7 +184,9 @@ public class Server {
                 response += "{\"games\":[";
                 var serializedGameInfo = new ArrayList<String>();
                 for (var game : collectionOfGames) {
-                    serializedGameInfo.add("{\"gameID\":" + Integer.toString(game.gameID()) + ", \"whiteUsername\":" + (game.whiteUsername() != null ? ("\"" + game.whiteUsername() + "\"") : null) + ", \"blackUsername\":" + (game.blackUsername() != null ? ("\"" + game.blackUsername() + "\"") : null) + ", \"gameName\":\"" + game.gameName() + "\"}");
+                    serializedGameInfo.add("{\"gameID\":" + Integer.toString(game.gameID()) + ", \"whiteUsername\":" +
+                            (game.whiteUsername() != null ? ("\"" + game.whiteUsername() + "\"") : null) + ", \"blackUsername\":" + (game.blackUsername() != null ? ("\"" +
+                            game.blackUsername() + "\"") : null) + ", \"gameName\":\"" + game.gameName() + "\"}");
                 }
                 response += String.join(",", serializedGameInfo) + "]}";
 
