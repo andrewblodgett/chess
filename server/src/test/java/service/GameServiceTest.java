@@ -72,10 +72,29 @@ class ServiceTest {
         });
     }
 
+    @Test
+    void listGamesBadAuth() {
+        var game = gameService.createGame(auth.authToken(), "game4");
+        var game2 = gameService.createGame(auth.authToken(), "game4=5");
+        assertThrows(Exception.class, () -> {
+            gameService.listGames("badAuth");
+        });
+    }
+
 
     @Test
-    void login() {
+    void loginFail() {
+        userService.logout(auth.authToken());
+        assertThrows(Exception.class, () -> {
+            auth = userService.login(new UserData(auth.username(), "wrong password", "1@1.1"));
+        });
+    }
 
+    @Test
+    void loginSuccess() {
+        assertDoesNotThrow(() -> {
+            auth = userService.login(new UserData(auth.username(), "password123", "1@1.1"));
+        });
     }
 
     @Test
@@ -86,7 +105,27 @@ class ServiceTest {
     }
 
     @Test
+    void logoutBadAuth() {
+        assertThrows(Exception.class, () -> {
+            userService.logout("badAuth");
+        });
+    }
+
+    @Test
     void clear() {
+        assertDoesNotThrow(() -> {
+            userService.clear();
+        });
+    }
+
+    @Test
+    void multipleClears() {
+        assertDoesNotThrow(() -> {
+            userService.clear();
+        });
+        assertDoesNotThrow(() -> {
+            userService.clear();
+        });
         assertDoesNotThrow(() -> {
             userService.clear();
         });
