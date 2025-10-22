@@ -185,8 +185,9 @@ public class Server {
                 var serializedGameInfo = new ArrayList<String>();
                 for (var game : collectionOfGames) {
                     serializedGameInfo.add("{\"gameID\":" + Integer.toString(game.gameID()) + ", \"whiteUsername\":" +
-                            (game.whiteUsername() != null ? ("\"" + game.whiteUsername() + "\"") : null) + ", \"blackUsername\":" + (game.blackUsername() != null ? ("\"" +
-                            game.blackUsername() + "\"") : null) + ", \"gameName\":\"" + game.gameName() + "\"}");
+                            (game.whiteUsername() != null ? ("\"" + game.whiteUsername() + "\"") : null) + ", \"blackUsername\":" +
+                            (game.blackUsername() != null ? ("\"" + game.blackUsername() + "\"") : null) +
+                            ", \"gameName\":\"" + game.gameName() + "\"}");
                 }
                 response += String.join(",", serializedGameInfo) + "]}";
 
