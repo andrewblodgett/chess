@@ -73,6 +73,21 @@ public class ChessPiece {
         }
     }
 
+    private void moveUtility(ChessPosition pos, ChessBoard board, HashSet<ChessMove> validMoves, int rowIncrement, int colIncrement) {
+        var row = pos.getRow();
+        var col = pos.getColumn();
+        while (true) {
+            row = row + rowIncrement;
+            col = col + colIncrement;
+            if (row > 8 || col > 8 || row < 1 || col < 1 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
+                break;
+            }
+            validMoves.add(new ChessMove(pos, new ChessPosition(row, col), null));
+            if (canCapture(board.getPiece(new ChessPosition(row, col)))) {
+                break;
+            }
+        }
+    }
 
     /**
      * Calculates all the positions a chess piece can move to
@@ -87,104 +102,15 @@ public class ChessPiece {
         var col = pos.getColumn();
 
         if (type == PieceType.BISHOP || type == PieceType.QUEEN) {
-            while (true) {
-                row = row + 1;
-                col = col + 1;
-                if (row > 8 || col > 8 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
-                    break;
-                }
-                validMoves.add(new ChessMove(pos, new ChessPosition(row, col), null));
-                if (canCapture(board.getPiece(new ChessPosition(row, col)))) {
-                    break;
-                }
-            }
-            row = pos.getRow();
-            col = pos.getColumn();
-            while (true) {
-                row = row + 1;
-                col = col - 1;
-                if (row > 8 || col < 1 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
-                    break;
-                }
-                validMoves.add(new ChessMove(pos, new ChessPosition(row, col), null));
-                if (canCapture(board.getPiece(new ChessPosition(row, col)))) {
-                    break;
-                }
-            }
-            row = pos.getRow();
-            col = pos.getColumn();
-            while (true) {
-                row = row - 1;
-                col = col + 1;
-                if (row < 1 || col > 8 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
-                    break;
-                }
-                validMoves.add(new ChessMove(pos, new ChessPosition(row, col), null));
-                if (canCapture(board.getPiece(new ChessPosition(row, col)))) {
-                    break;
-                }
-            }
-            row = pos.getRow();
-            col = pos.getColumn();
-            while (true) {
-                row = row - 1;
-                col = col - 1;
-                if (row < 1 || col < 1 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
-                    break;
-                }
-                validMoves.add(new ChessMove(pos, new ChessPosition(row, col), null));
-                if (canCapture(board.getPiece(new ChessPosition(row, col)))) {
-                    break;
-                }
+            int[][] increments = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+            for (int[] increment : increments) {
+                moveUtility(pos, board, validMoves, increment[0], increment[1]);
             }
         }
         if (type == PieceType.ROOK || type == PieceType.QUEEN) {
-            row = pos.getRow();
-            col = pos.getColumn();
-            var temprow = row;
-            var tempcol = col;
-            while (temprow < 8) {
-                temprow++;
-                if (isSameColor(board.getPiece(new ChessPosition(temprow, tempcol)))) {
-                    break;
-                }
-                validMoves.add(new ChessMove(pos, new ChessPosition(temprow, tempcol), null));
-                if (canCapture(board.getPiece(new ChessPosition(temprow, tempcol)))) {
-                    break;
-                }
-            }
-            temprow = row;
-            while (temprow > 1) {
-                temprow--;
-                if (isSameColor(board.getPiece(new ChessPosition(temprow, tempcol)))) {
-                    break;
-                }
-                validMoves.add(new ChessMove(pos, new ChessPosition(temprow, tempcol), null));
-                if (canCapture(board.getPiece(new ChessPosition(temprow, tempcol)))) {
-                    break;
-                }
-            }
-            temprow = row;
-            while (tempcol > 1) {
-                tempcol--;
-                if (isSameColor(board.getPiece(new ChessPosition(temprow, tempcol)))) {
-                    break;
-                }
-                validMoves.add(new ChessMove(pos, new ChessPosition(temprow, tempcol), null));
-                if (canCapture(board.getPiece(new ChessPosition(temprow, tempcol)))) {
-                    break;
-                }
-            }
-            tempcol = col;
-            while (tempcol < 8) {
-                tempcol++;
-                if (isSameColor(board.getPiece(new ChessPosition(temprow, tempcol)))) {
-                    break;
-                }
-                validMoves.add(new ChessMove(pos, new ChessPosition(temprow, tempcol), null));
-                if (canCapture(board.getPiece(new ChessPosition(temprow, tempcol)))) {
-                    break;
-                }
+            int[][] increments = {{1, 0}, {0, -1}, {-1, 0}, {0, 1}};
+            for (int[] increment : increments) {
+                moveUtility(pos, board, validMoves, increment[0], increment[1]);
             }
         } else if (type == PieceType.KING) {
             int[][] kingPossibilities = {{1, 1}, {1, 0}, {1, -1}, {0, 1}, {0, -1}, {-1, 1}, {-1, 0}, {-1, -1}};
