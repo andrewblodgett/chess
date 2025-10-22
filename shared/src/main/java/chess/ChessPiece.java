@@ -51,8 +51,7 @@ public class ChessPiece {
     private boolean isSameColor(ChessPiece piece) {
         if (piece == null) {
             return false;
-        }
-        else {
+        } else {
             return piece.getTeamColor() == pieceColor;
         }
     }
@@ -60,9 +59,17 @@ public class ChessPiece {
     private boolean canCapture(ChessPiece piece) {
         if (piece == null) {
             return false;
-        }
-        else {
+        } else {
             return !isSameColor(piece);
+        }
+    }
+
+    private void kingAndKnightHelperUtil(ChessBoard board, ChessPosition pos, HashSet<ChessMove> validMoves, int row, int col, int[] p) {
+        var newPos = new ChessPosition(row + p[0], col + p[1]);
+        if (board.getPiece(newPos) == null) {
+            validMoves.add(new ChessMove(pos, newPos, null));
+        } else if (canCapture(board.getPiece(newPos))) {
+            validMoves.add(new ChessMove(pos, newPos, null));
         }
     }
 
@@ -81,8 +88,8 @@ public class ChessPiece {
 
         if (type == PieceType.BISHOP || type == PieceType.QUEEN) {
             while (true) {
-                row = row +1;
-                col = col+1;
+                row = row + 1;
+                col = col + 1;
                 if (row > 8 || col > 8 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
                     break;
                 }
@@ -94,8 +101,8 @@ public class ChessPiece {
             row = pos.getRow();
             col = pos.getColumn();
             while (true) {
-                row = row +1;
-                col = col-1;
+                row = row + 1;
+                col = col - 1;
                 if (row > 8 || col < 1 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
                     break;
                 }
@@ -107,8 +114,8 @@ public class ChessPiece {
             row = pos.getRow();
             col = pos.getColumn();
             while (true) {
-                row = row-1;
-                col = col+1;
+                row = row - 1;
+                col = col + 1;
                 if (row < 1 || col > 8 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
                     break;
                 }
@@ -120,8 +127,8 @@ public class ChessPiece {
             row = pos.getRow();
             col = pos.getColumn();
             while (true) {
-                row = row-1;
-                col = col-1;
+                row = row - 1;
+                col = col - 1;
                 if (row < 1 || col < 1 || isSameColor(board.getPiece(new ChessPosition(row, col)))) {
                     break;
                 }
@@ -130,7 +137,6 @@ public class ChessPiece {
                     break;
                 }
             }
-
         }
         if (type == PieceType.ROOK || type == PieceType.QUEEN) {
             row = pos.getRow();
@@ -181,33 +187,22 @@ public class ChessPiece {
                 }
             }
         } else if (type == PieceType.KING) {
-             int[][] kingPossibilities = {{1,1},{1,0},{1,-1},{0,1},{0,-1},{-1,1},{-1,0},{-1,-1}};
+            int[][] kingPossibilities = {{1, 1}, {1, 0}, {1, -1}, {0, 1}, {0, -1}, {-1, 1}, {-1, 0}, {-1, -1}};
             for (var p : kingPossibilities) {
                 try {
-                    var newpos = new ChessPosition(row+p[0],col+p[1]);
-                    if (board.getPiece(newpos) == null) {
-                        validMoves.add(new ChessMove(pos, newpos,null));
-                    } else if (canCapture(board.getPiece(newpos))) {
-                        validMoves.add(new ChessMove(pos, newpos,null));
-                    }
-                } catch (Exception e) {}
+                    kingAndKnightHelperUtil(board, pos, validMoves, row, col, p);
+                } catch (Exception e) {
+                }
             }
-
-
         } else if (type == PieceType.KNIGHT) {
-            int[][] knightPossibilities = {{2,1},{1,2},{2,-1},{-1,2},{-2,-1},{-1,-2},{-2,1},{1,-2}};
+            int[][] knightPossibilities = {{2, 1}, {1, 2}, {2, -1}, {-1, 2}, {-2, -1}, {-1, -2}, {-2, 1}, {1, -2}};
             for (var p : knightPossibilities) {
                 try {
-                    if(col+p[1] > 0 && row+p[0] > 0){
-                        var newpos = new ChessPosition(row+p[0],col+p[1]);
-                        if (board.getPiece(newpos) == null) {
-                            validMoves.add(new ChessMove(pos, newpos,null));
-                        } else if (canCapture(board.getPiece(newpos))) {
-                            validMoves.add(new ChessMove(pos, newpos,null));
-                        }
+                    if (col + p[1] > 0 && row + p[0] > 0) {
+                        kingAndKnightHelperUtil(board, pos, validMoves, row, col, p);
                     }
-
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
         } else if (type == PieceType.PAWN) {
             var directionMultiplier = 1;
@@ -218,35 +213,28 @@ public class ChessPiece {
                 startingRow = 7;
                 promoRow = 1;
             }
-            // Checking to see if they can capture diagonally
             try {
-                if (canCapture(board.getPiece(new ChessPosition(row+directionMultiplier, col+1)))) {
+                if (canCapture(board.getPiece(new ChessPosition(row + directionMultiplier, col + 1)))) {
                     validMoves.add(new ChessMove(pos, new ChessPosition(row + directionMultiplier, col + 1), null));
-
                 }
-            } catch (ArrayIndexOutOfBoundsException e){
-
+            } catch (ArrayIndexOutOfBoundsException e) {
             }
             try {
-                if (canCapture(board.getPiece(new ChessPosition(row+directionMultiplier, col-1)))) {
-                    validMoves.add(new ChessMove(pos, new ChessPosition(row+directionMultiplier, col-1), null));
+                if (canCapture(board.getPiece(new ChessPosition(row + directionMultiplier, col - 1)))) {
+                    validMoves.add(new ChessMove(pos, new ChessPosition(row + directionMultiplier, col - 1), null));
                 }
+            } catch (ArrayIndexOutOfBoundsException e) {
             }
-            catch (ArrayIndexOutOfBoundsException e){
-
-            }
-            // See if the pawn can advance
-            if (board.getPiece(new ChessPosition(row+directionMultiplier, col)) == null) {
-                validMoves.add(new ChessMove(pos, new ChessPosition(row+directionMultiplier, col), null));
+            if (board.getPiece(new ChessPosition(row + directionMultiplier, col)) == null) {
+                validMoves.add(new ChessMove(pos, new ChessPosition(row + directionMultiplier, col), null));
                 if (row == startingRow) {
-                    if (board.getPiece(new ChessPosition(row+2*directionMultiplier, col)) == null) {
-                        validMoves.add(new ChessMove(pos, new ChessPosition(row+2*directionMultiplier, col), null));
+                    if (board.getPiece(new ChessPosition(row + 2 * directionMultiplier, col)) == null) {
+                        validMoves.add(new ChessMove(pos, new ChessPosition(row + 2 * directionMultiplier, col), null));
                     }
                 }
             }
             var movesToRemove = new HashSet<ChessMove>();
             var movesToAdd = new HashSet<ChessMove>();
-
             for (var m : validMoves) {
                 if (m.getEndPosition().getRow() == promoRow) {
                     movesToRemove.add(m);
@@ -258,9 +246,7 @@ public class ChessPiece {
             }
             validMoves.removeAll(movesToRemove);
             validMoves.addAll(movesToAdd);
-
         }
-
         return validMoves;
     }
 
