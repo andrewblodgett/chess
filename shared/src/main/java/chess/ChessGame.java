@@ -96,10 +96,8 @@ public class ChessGame {
         for (var row = 1; row < 9; row++) {
             for (var col = 1; col < 9; col++) {
                 var currentPiece = gameboard.getPiece(new ChessPosition(row, col));
-                if (currentPiece != null) {
-                    if (currentPiece.getTeamColor() == color) {
-                        allMoves.addAll(validMoves(new ChessPosition(row, col)));
-                    }
+                if (currentPiece != null && currentPiece.getTeamColor() == color) {
+                    allMoves.addAll(validMoves(new ChessPosition(row, col)));
                 }
             }
         }
@@ -118,18 +116,46 @@ public class ChessGame {
 
         for (var row = 1; row < 9; row++) {
             for (var col = 1; col < 9; col++) {
-                var currentPiece = board.getPiece(new ChessPosition(row, col));
-                if (currentPiece != null && currentPiece.getTeamColor() == otherTeam(teamColor)) {
-                    var potentialMoves = currentPiece.pieceMoves(board, new ChessPosition(row, col));
-                    for (var move : potentialMoves) {
-                        if (move.getEndPosition().getColumn() == kingPos.getColumn() && move.getEndPosition().getRow() == kingPos.getRow()) {
-                            return true;
-                        }
-                    }
+                if (pieceCanAttackKing(board, row, col, teamColor, kingPos)) {
+                    return true;
                 }
             }
         }
         return false;
+    }
+
+    private boolean pieceCanAttackKing(ChessBoard board, int row, int col, TeamColor teamColor, ChessPosition kingPos) {
+        var currentPiece = board.getPiece(new ChessPosition(row, col));
+        if (currentPiece != null && currentPiece.getTeamColor() == otherTeam(teamColor)) {
+            var potentialMoves = currentPiece.pieceMoves(board, new ChessPosition(row, col));
+            for (var move : potentialMoves) {
+                if (move.getEndPosition().getColumn() == kingPos.getColumn() && move.getEndPosition().getRow() == kingPos.getRow()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void makeEnPassantMove(ChessMove move, ChessPiece startingPiece) {
+        for (var ep : enPassant(move.getStartPosition())) {
+            if (ep.getEndPosition().equals(move.getEndPosition())) {
+                var pawnBehindVector = (startingPiece.getTeamColor() == TeamColor.BLACK) ? 1 : -1;
+                gameboard.addPiece(
+                        new ChessPosition(move.getEndPosition().getRow() + pawnBehindVector, move.getEndPosition().getColumn()), null);
+            }
+        }
+    }
+
+
+    private void moveTheRooksAfterCastling(ChessMove move) {
+        if (move.getStartPosition().getColumn() - move.getEndPosition().getColumn() == -2) {
+            gameboard.movePiece(new ChessMove(new ChessPosition(move.getStartPosition().getRow(), 8),
+                    new ChessPosition(move.getStartPosition().getRow(), 6), null));
+        } else if (move.getStartPosition().getColumn() - move.getEndPosition().getColumn() == 2) {
+            gameboard.movePiece(new ChessMove(new ChessPosition(move.getStartPosition().getRow(), 1),
+                    new ChessPosition(move.getStartPosition().getRow(), 4), null));
+        }
     }
 
     /**
@@ -144,25 +170,12 @@ public class ChessGame {
             if (((startingPiece.getTeamColor() == TeamColor.WHITE && isWhitesTurn)
                     || (startingPiece.getTeamColor() == TeamColor.BLACK && !isWhitesTurn)) && validMoves(move.getStartPosition()).contains(move)) {
                 if (startingPiece.getPieceType() == ChessPiece.PieceType.PAWN && !enPassant(move.getStartPosition()).isEmpty()) {
-                    for (var ep : enPassant(move.getStartPosition())) {
-                        if (ep.getEndPosition().equals(move.getEndPosition())) {
-                            var pawnBehindVector = (startingPiece.getTeamColor() == TeamColor.BLACK) ? 1 : -1;
-                            gameboard.addPiece(
-                                    new ChessPosition(move.getEndPosition().getRow() + pawnBehindVector, move.getEndPosition().getColumn()), null);
-                        }
-                    }
+                    makeEnPassantMove(move, startingPiece);
                 }
 
                 history.add(gameboard.copy());
-                //check if we need to move rook after king moves for a castle
                 if (startingPiece.getPieceType() == ChessPiece.PieceType.KING) {
-                    if (move.getStartPosition().getColumn() - move.getEndPosition().getColumn() == -2) {
-                        gameboard.movePiece(new ChessMove(new ChessPosition(move.getStartPosition().getRow(), 8),
-                                new ChessPosition(move.getStartPosition().getRow(), 6), null));
-                    } else if (move.getStartPosition().getColumn() - move.getEndPosition().getColumn() == 2) {
-                        gameboard.movePiece(new ChessMove(new ChessPosition(move.getStartPosition().getRow(), 1),
-                                new ChessPosition(move.getStartPosition().getRow(), 4), null));
-                    }
+                    moveTheRooksAfterCastling(move);
                 }
                 gameboard.movePiece(move);
                 isWhitesTurn = !isWhitesTurn;
@@ -178,10 +191,8 @@ public class ChessGame {
         for (var row = 1; row < 9; row++) {
             for (var col = 1; col < 9; col++) {
                 var pieceInQuestion = board.getPiece(new ChessPosition(row, col));
-                if (pieceInQuestion != null) {
-                    if (pieceInQuestion.getPieceType() == ChessPiece.PieceType.KING && pieceInQuestion.getTeamColor() == teamColor) {
-                        return new ChessPosition(row, col);
-                    }
+                if (pieceInQuestion != null && pieceInQuestion.getPieceType() == ChessPiece.PieceType.KING && pieceInQuestion.getTeamColor() == teamColor) {
+                    return new ChessPosition(row, col);
                 }
             }
         }
@@ -240,7 +251,6 @@ public class ChessGame {
             }
 
         }
-
 
         possibleCastles.add(new ChessMove(new ChessPosition(row, 5), new ChessPosition(row, 7), null));
         return possibleCastles;
