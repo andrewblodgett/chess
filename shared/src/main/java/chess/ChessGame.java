@@ -191,7 +191,8 @@ public class ChessGame {
         for (var row = 1; row < 9; row++) {
             for (var col = 1; col < 9; col++) {
                 var pieceInQuestion = board.getPiece(new ChessPosition(row, col));
-                if (pieceInQuestion != null && pieceInQuestion.getPieceType() == ChessPiece.PieceType.KING && pieceInQuestion.getTeamColor() == teamColor) {
+                if (pieceInQuestion != null && pieceInQuestion.getPieceType() == ChessPiece.PieceType.KING
+                        && pieceInQuestion.getTeamColor() == teamColor) {
                     return new ChessPosition(row, col);
                 }
             }
@@ -298,6 +299,33 @@ public class ChessGame {
         return possibleCastles;
     }
 
+    private void enPassantHelperNormalCase(ChessBoard lastturnboard, ChessPosition startPosition, int directionVector,
+                                           HashSet<ChessMove> possibleEnPassant, TeamColor enemyColor) {
+        var potentialLastMovedPawn = lastturnboard.getPiece(
+                new ChessPosition(startPosition.getRow() + 2 * directionVector, startPosition.getColumn() + 1));
+        if (potentialLastMovedPawn != null && potentialLastMovedPawn.getPieceType() == ChessPiece.PieceType.PAWN
+                && potentialLastMovedPawn.getTeamColor() == enemyColor) {
+            var movedPawn = gameboard.getPiece(new ChessPosition(startPosition.getRow(), startPosition.getColumn() + 1));
+            if (movedPawn != null && movedPawn.getPieceType() == ChessPiece.PieceType.PAWN && movedPawn.getTeamColor() == enemyColor) {
+                possibleEnPassant.add(new ChessMove(startPosition,
+                        new ChessPosition(startPosition.getRow() + directionVector, startPosition.getColumn() + 1), null));
+            }
+        }
+    }
+
+    private void enPassantHelperEdgeCase(ChessBoard lastturnboard, ChessPosition startPosition, int directionVector,
+                                         HashSet<ChessMove> possibleEnPassant, TeamColor enemyColor) {
+        var potentialLastMovedPawn = lastturnboard.getPiece(
+                new ChessPosition(startPosition.getRow() + 2 * directionVector, startPosition.getColumn() - 1));
+        if (potentialLastMovedPawn != null && potentialLastMovedPawn.getPieceType() == ChessPiece.PieceType.PAWN
+                && potentialLastMovedPawn.getTeamColor() == enemyColor) {
+            var movedPawn = gameboard.getPiece(new ChessPosition(startPosition.getRow(), startPosition.getColumn() - 1));
+            if (movedPawn != null && movedPawn.getPieceType() == ChessPiece.PieceType.PAWN && movedPawn.getTeamColor() == enemyColor) {
+                possibleEnPassant.add(new ChessMove(startPosition, new ChessPosition(startPosition.getRow() + directionVector,
+                        startPosition.getColumn() - 1), null));
+            }
+        }
+    }
 
     private Collection<ChessMove> enPassant(ChessPosition startPosition) {
         var possibleEnPassant = new HashSet<ChessMove>();
@@ -308,38 +336,16 @@ public class ChessGame {
             var directionVector = (pawn.getTeamColor() == TeamColor.WHITE) ? 1 : -1;
             if (startPosition.getRow() == 4 || startPosition.getRow() == 5) {
                 if (startPosition.getColumn() < 8) {
-                    var potentialLastMovedPawn = lastturnboard.getPiece(
-                            new ChessPosition(startPosition.getRow() + 2 * directionVector, startPosition.getColumn() + 1));
-                    if (potentialLastMovedPawn != null && potentialLastMovedPawn.getPieceType() == ChessPiece.PieceType.PAWN
-                            && potentialLastMovedPawn.getTeamColor() == enemyColor) {
-                        var movedPawn = gameboard.getPiece(new ChessPosition(startPosition.getRow(), startPosition.getColumn() + 1));
-                        if (movedPawn != null && movedPawn.getPieceType() == ChessPiece.PieceType.PAWN && movedPawn.getTeamColor() == enemyColor) {
-                            possibleEnPassant.add(new ChessMove(startPosition,
-                                    new ChessPosition(startPosition.getRow() + directionVector, startPosition.getColumn() + 1), null));
-                        }
-                    }
-
+                    enPassantHelperNormalCase(lastturnboard, startPosition, directionVector, possibleEnPassant, enemyColor);
                 }
 
                 if (startPosition.getColumn() > 1) {
-                    var potentialLastMovedPawn = lastturnboard.getPiece(
-                            new ChessPosition(startPosition.getRow() + 2 * directionVector, startPosition.getColumn() - 1));
-                    if (potentialLastMovedPawn != null && potentialLastMovedPawn.getPieceType() == ChessPiece.PieceType.PAWN
-                            && potentialLastMovedPawn.getTeamColor() == enemyColor) {
-                        var movedPawn = gameboard.getPiece(new ChessPosition(startPosition.getRow(), startPosition.getColumn() - 1));
-                        if (movedPawn != null && movedPawn.getPieceType() == ChessPiece.PieceType.PAWN && movedPawn.getTeamColor() == enemyColor) {
-                            possibleEnPassant.add(new ChessMove(startPosition, new ChessPosition(startPosition.getRow() + directionVector,
-                                    startPosition.getColumn() - 1), null));
-                        }
-                    }
+                    enPassantHelperEdgeCase(lastturnboard, startPosition, directionVector, possibleEnPassant, enemyColor);
                 }
             }
-
-
         }
         return possibleEnPassant;
     }
-
 
     /**
      * Determines if the given team is in check
