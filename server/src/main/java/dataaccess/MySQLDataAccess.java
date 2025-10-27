@@ -26,10 +26,32 @@ public class MySQLDataAccess implements DataAccess {
         String[] statements = {
                 """
         CREATE TABLE IF NOT EXISTS  authData (
-            `authToken` varchar(256) NOT NULL,
-            `username` varchar(256) NOT NULL,
+            `authToken` VARCHAR(256) NOT NULL,
+            `username` VARCHAR(256) NOT NULL,
             PRIMARY KEY (`authToken`),
             INDEX (username)
+        )
+        """,
+                """
+        CREATE TABLE IF NOT EXISTS  userData (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `email` VARCHAR(256) NOT NULL,
+            `username` VARCHAR(256) NOT NULL,
+            `password` VARCHAR(256) NOT NULL,
+            PRIMARY KEY (`id`),
+            INDEX (username),
+            INDEX (email)
+        )
+        """,
+                """
+        CREATE TABLE IF NOT EXISTS  gameData (
+            `id` INT NOT NULL AUTO_INCREMENT,
+            `whiteUsername` VARCHAR(256),
+            `blackUsername` VARCHAR(256),
+            `gameName` VARCHAR(256) NOT NULL,
+            `game` BLOB NOT NULL,
+            PRIMARY KEY (`id`),
+            INDEX (gameName)
         )
         """
         };
