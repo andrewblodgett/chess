@@ -12,8 +12,35 @@ import java.util.List;
 
 public class MySQLDataAccess implements DataAccess {
 
-    public MySQLDataAccess() {
 
+    public static void main(String[] args) {
+        new MySQLDataAccess();
+    }
+
+    public MySQLDataAccess() throws DataAccessException {
+        configureDatabase();
+    }
+
+    private void configureDatabase() throws DataAccessException {
+        DatabaseManager.createDatabase();
+        String[] statements = {
+                """
+        CREATE TABLE IF NOT EXISTS  authData (
+            `authToken` varchar(256) NOT NULL,
+            `username` varchar(256) NOT NULL,
+            PRIMARY KEY (`authToken`),
+            INDEX (username)
+        )
+        """
+        };
+        for (int i = 0; i < statements.length; i++) {
+            try (var conn = DatabaseManager.getConnection()) {
+                var preparedStatement = conn.prepareStatement(statements[i]);
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                throw new DataAccessException("failed to add table number " + Integer.toString(i));
+            }
+        }
     }
 
     @Override
