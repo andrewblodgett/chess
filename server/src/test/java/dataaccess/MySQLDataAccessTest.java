@@ -36,11 +36,23 @@ class MySQLDataAccessTest {
     }
 
     @Test
+    void createNullUser() {
+        assertThrows(Exception.class, () -> {
+            dataAccess.createUser(null);
+        });
+    }
+
+    @Test
     void getUser() {
         assertDoesNotThrow(() -> {
             dataAccess.createUser(new UserData("him", "123", "sdfsdfkjsdhfkjsd"));
             dataAccess.getUser("him");
         });
+    }
+
+    @Test
+    void getFakeUser() {
+        assertNull(dataAccess.getUser("sdfkjdshkj"));
     }
 
     @Test
@@ -51,11 +63,23 @@ class MySQLDataAccessTest {
     }
 
     @Test
+    void createNullGame() {
+        assertThrows(Exception.class, () -> {
+            dataAccess.createGame(null);
+        });
+    }
+
+    @Test
     void getGame() {
         assertDoesNotThrow(() -> {
             dataAccess.createGame(new GameData(1, "w", "b", "game", new ChessGame()));
             dataAccess.getGame(1);
         });
+    }
+
+    @Test
+    void getFakeGame() {
+        assertNull(dataAccess.getGame(5));
     }
 
     @Test
@@ -76,9 +100,23 @@ class MySQLDataAccessTest {
     }
 
     @Test
+    void updateBadGame() {
+        assertThrows(Exception.class, () -> {
+            dataAccess.updateGame(null);
+        });
+    }
+
+    @Test
     void createAuth() {
         assertDoesNotThrow(() -> {
             dataAccess.createAuth(new AuthData("akdaskjfhakjfash", "bob"));
+        });
+    }
+
+    @Test
+    void createBadAuth() {
+        assertThrows(Exception.class, () -> {
+            dataAccess.createAuth(null);
         });
     }
 
@@ -91,10 +129,22 @@ class MySQLDataAccessTest {
     }
 
     @Test
+    void deleteFakeAuth() {
+        assertDoesNotThrow(() -> {
+            dataAccess.deleteAuth(null);
+        });
+    }
+
+    @Test
     void getAuth() {
         assertDoesNotThrow(() -> {
             dataAccess.createAuth(new AuthData("akdaskjfhakjfash", "bob"));
             dataAccess.getAuth("akdaskjfhakjfash");
         });
+    }
+
+    @Test
+    void getFakeAuth() {
+        assertNull(dataAccess.getAuth("akdaskjfhakjfash"));
     }
 }
