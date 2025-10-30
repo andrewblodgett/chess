@@ -1,15 +1,16 @@
 package dataaccess;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
+import com.google.gson.Gson.*;
 import datamodel.AuthData;
 import datamodel.GameData;
 import datamodel.UserData;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class MySQLDataAccess implements DataAccess {
 
@@ -23,6 +24,8 @@ public class MySQLDataAccess implements DataAccess {
         m.createUser(new UserData("jimmy", "password123", "113456456456@fds.cm"));
         m.createUser(new UserData("tomithoi", "password123", "1@dfsfds.cm"));
         System.out.println(m.getUser("jimmy"));
+        m.createGame(new GameData(42, "jim", "john", "sdfsdfsd", new ChessGame()));
+        System.out.println(m.getGame(42));
     }
 
     public MySQLDataAccess() throws DataAccessException {
@@ -51,12 +54,12 @@ public class MySQLDataAccess implements DataAccess {
         """,
                 """
         CREATE TABLE IF NOT EXISTS  gameData (
-            id INT NOT NULL AUTO_INCREMENT,
+            gameID INT NOT NULL AUTO_INCREMENT,
             whiteUsername VARCHAR(256),
             blackUsername VARCHAR(256),
             gameName VARCHAR(256) NOT NULL,
-            game BLOB NOT NULL,
-            PRIMARY KEY (id),
+            game TEXT NOT NULL,
+            PRIMARY KEY (gameID),
             INDEX (gameName)
         )
         """
@@ -113,11 +116,35 @@ public class MySQLDataAccess implements DataAccess {
 
     @Override
     public void createGame(GameData game) {
-
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement("INSERT INTO gameData VALUES (?, ?, ?, ?, ?)");
+            preparedStatement.setInt(1, game.gameID());
+            preparedStatement.setString(2, game.whiteUsername());
+            preparedStatement.setString(3, game.blackUsername());
+            preparedStatement.setString(4, game.gameName());
+            var json = new Gson().toJson(game.game());
+            preparedStatement.setString(5, json);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to add user because " + e.toString());
+        }
     }
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement("SELECT * FROM gameData WHERE gameID=?");
+            preparedStatement.setInt(1, gameID);
+            try (var result = preparedStatement.executeQuery()) {
+                while (result.next()) {
+                    var gameMap = new Gson().fromJson(result.getString("game"), Map.class);
+                    return new GameData(result.getInt("gameID"), result.getString("whiteUsername"), result.getString("blackUsername"), result.getString("gameName"), new ChessGame());
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to get user because " + e.toString());
+        }
         return null;
     }
 
