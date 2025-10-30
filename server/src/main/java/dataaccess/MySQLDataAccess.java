@@ -151,7 +151,8 @@ public class MySQLDataAccess implements DataAccess {
                     ByteArrayInputStream bais = new ByteArrayInputStream(result.getBytes("game"));
                     ObjectInputStream ois = new ObjectInputStream(bais);
                     ChessGame loadedGame = (ChessGame) ois.readObject();
-                    return new GameData(result.getInt("gameID"), result.getString("whiteUsername"), result.getString("blackUsername"), result.getString("gameName"), loadedGame);
+                    return new GameData(result.getInt("gameID"), result.getString("whiteUsername"), result.getString("blackUsername"),
+                            result.getString("gameName"), loadedGame);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -175,7 +176,8 @@ public class MySQLDataAccess implements DataAccess {
                     ByteArrayInputStream bais = new ByteArrayInputStream(result.getBytes("game"));
                     ObjectInputStream ois = new ObjectInputStream(bais);
                     ChessGame loadedGame = (ChessGame) ois.readObject();
-                    allGames.add(new GameData(result.getInt("gameID"), result.getString("whiteUsername"), result.getString("blackUsername"), result.getString("gameName"), loadedGame));
+                    allGames.add(new GameData(result.getInt("gameID"), result.getString("whiteUsername"),
+                            result.getString("blackUsername"), result.getString("gameName"), loadedGame));
                 }
                 return allGames;
             } catch (ClassNotFoundException e) {
