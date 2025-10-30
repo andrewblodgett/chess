@@ -17,20 +17,6 @@ import java.util.Map;
 
 public class MySQLDataAccess implements DataAccess {
 
-
-    public static void main(String[] args) {
-
-        MySQLDataAccess m = new MySQLDataAccess();
-        m.clear();
-        m.configureDatabase();
-        m.createUser(new UserData("jimothy", "password123", "123@dfsfds.cm"));
-        m.createUser(new UserData("jimmy", "password123", "113456456456@fds.cm"));
-        m.createUser(new UserData("tomithoi", "password123", "1@dfsfds.cm"));
-        System.out.println(m.getUser("jimmy"));
-        m.createGame(new GameData(42, "jim", "john", "sdfsdfsd", new ChessGame()));
-        System.out.println(m.getGame(42));
-    }
-
     public MySQLDataAccess() throws DataAccessException {
         configureDatabase();
     }
