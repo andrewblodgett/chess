@@ -8,6 +8,7 @@ import datamodel.GameData;
 import datamodel.UserData;
 import service.UnauthorizedException;
 
+import java.io.*;
 import java.sql.*;
 import java.util.Collection;
 import java.util.HashSet;
@@ -17,18 +18,18 @@ import java.util.Map;
 public class MySQLDataAccess implements DataAccess {
 
 
-//    public static void main(String[] args) {
-//
-//        MySQLDataAccess m = new MySQLDataAccess();
-//        m.clear();
-//        m.configureDatabase();
-//        m.createUser(new UserData("jimothy", "password123", "123@dfsfds.cm"));
-//        m.createUser(new UserData("jimmy", "password123", "113456456456@fds.cm"));
-//        m.createUser(new UserData("tomithoi", "password123", "1@dfsfds.cm"));
-//        System.out.println(m.getUser("jimmy"));
-//        m.createGame(new GameData(42, "jim", "john", "sdfsdfsd", new ChessGame()));
-//        System.out.println(m.getGame(42));
-//    }
+    public static void main(String[] args) {
+
+        MySQLDataAccess m = new MySQLDataAccess();
+        m.clear();
+        m.configureDatabase();
+        m.createUser(new UserData("jimothy", "password123", "123@dfsfds.cm"));
+        m.createUser(new UserData("jimmy", "password123", "113456456456@fds.cm"));
+        m.createUser(new UserData("tomithoi", "password123", "1@dfsfds.cm"));
+        System.out.println(m.getUser("jimmy"));
+        m.createGame(new GameData(42, "jim", "john", "sdfsdfsd", new ChessGame()));
+        System.out.println(m.getGame(42));
+    }
 
     public MySQLDataAccess() throws DataAccessException {
         configureDatabase();
@@ -60,7 +61,7 @@ public class MySQLDataAccess implements DataAccess {
             whiteUsername VARCHAR(256),
             blackUsername VARCHAR(256),
             gameName VARCHAR(256) NOT NULL,
-            game TEXT NOT NULL,
+            game BLOB NOT NULL,
             PRIMARY KEY (gameID),
             INDEX (gameName)
         )
@@ -128,11 +129,15 @@ public class MySQLDataAccess implements DataAccess {
             preparedStatement.setString(2, game.whiteUsername());
             preparedStatement.setString(3, game.blackUsername());
             preparedStatement.setString(4, game.gameName());
-            var json = new Gson().toJson(game.game());
-            preparedStatement.setString(5, json);
+            var byteOutputStream = new ByteArrayOutputStream();
+            var objectOutputStream = new ObjectOutputStream(byteOutputStream);
+            objectOutputStream.writeObject(game.game());
+            preparedStatement.setBytes(5, byteOutputStream.toByteArray());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("failed to add user because " + e.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -143,9 +148,15 @@ public class MySQLDataAccess implements DataAccess {
             preparedStatement.setInt(1, gameID);
             try (var result = preparedStatement.executeQuery()) {
                 while (result.next()) {
-                    var gameMap = new Gson().fromJson(result.getString("game"), Map.class);
-                    return new GameData(result.getInt("gameID"), result.getString("whiteUsername"), result.getString("blackUsername"), result.getString("gameName"), new ChessGame());
+                    ByteArrayInputStream bais = new ByteArrayInputStream(result.getBytes("game"));
+                    ObjectInputStream ois = new ObjectInputStream(bais);
+                    ChessGame loadedGame = (ChessGame) ois.readObject();
+                    return new GameData(result.getInt("gameID"), result.getString("whiteUsername"), result.getString("blackUsername"), result.getString("gameName"), loadedGame);
                 }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
             }
 
         } catch (SQLException e) {
@@ -161,10 +172,16 @@ public class MySQLDataAccess implements DataAccess {
             try (var result = preparedStatement.executeQuery()) {
                 var allGames = new HashSet<GameData>();
                 while (result.next()) {
-                    var gameMap = new Gson().fromJson(result.getString("game"), Map.class);
-                    allGames.add(new GameData(result.getInt("gameID"), result.getString("whiteUsername"), result.getString("blackUsername"), result.getString("gameName"), new ChessGame()));
+                    ByteArrayInputStream bais = new ByteArrayInputStream(result.getBytes("game"));
+                    ObjectInputStream ois = new ObjectInputStream(bais);
+                    ChessGame loadedGame = (ChessGame) ois.readObject();
+                    allGames.add(new GameData(result.getInt("gameID"), result.getString("whiteUsername"), result.getString("blackUsername"), result.getString("gameName"), loadedGame));
                 }
                 return allGames;
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
 
         } catch (SQLException e) {
@@ -174,7 +191,23 @@ public class MySQLDataAccess implements DataAccess {
 
     @Override
     public void updateGame(GameData game) {
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement("UPDATE gameData SET whiteUsername=?, blackUsername=?, gameName=?, game=? WHERE gameID=?");
+            preparedStatement.setString(1, game.whiteUsername());
+            preparedStatement.setString(2, game.blackUsername());
+            preparedStatement.setString(3, game.gameName());
+            var byteOutputStream = new ByteArrayOutputStream();
+            var objectOutputStream = new ObjectOutputStream(byteOutputStream);
+            objectOutputStream.writeObject(game.game());
+            preparedStatement.setBytes(4, byteOutputStream.toByteArray());
+            preparedStatement.setInt(5, game.gameID());
 
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to add user because " + e.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

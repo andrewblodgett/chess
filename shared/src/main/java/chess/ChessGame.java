@@ -1,5 +1,6 @@
 package chess;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -12,7 +13,7 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 
-public class ChessGame {
+public class ChessGame implements Serializable {
 
     private boolean isWhitesTurn;
     private ChessBoard gameboard;

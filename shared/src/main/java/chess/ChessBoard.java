@@ -1,5 +1,6 @@
 package chess;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -9,11 +10,13 @@ import java.util.Objects;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessBoard {
+public class ChessBoard implements Serializable {
     ChessPiece[][] board = new ChessPiece[9][9];
+
     public ChessBoard() {
-        
+
     }
+
     private ChessBoard(ChessPiece[][] newBoard) {
         board = newBoard;
     }
@@ -93,8 +96,8 @@ public class ChessBoard {
 
     public ChessBoard copy() {
         ChessPiece[][] copiedBoard = new ChessPiece[9][9];
-        for (var i = 1; i < 9; i++ ){
-            for (var j = 1; j<9; j++) {
+        for (var i = 1; i < 9; i++) {
+            for (var j = 1; j < 9; j++) {
                 copiedBoard[i][j] = board[i][j];
             }
         }
@@ -123,7 +126,7 @@ public class ChessBoard {
                 if (p != null) {
                     s += p.toString() + "|";
                 } else {
-                    s+= "_|";
+                    s += "_|";
                 }
             }
             s += "\n";
