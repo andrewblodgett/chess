@@ -49,11 +49,7 @@ public class UserService {
     }
 
     public void clear() {
-        try {
-            dataAccess.clear();
-        } catch (Exception e) {
-            System.out.println("failed to clear database because " + e.toString());
-        }
+        dataAccess.clear();
     }
 
     private String generateAuthToken() {

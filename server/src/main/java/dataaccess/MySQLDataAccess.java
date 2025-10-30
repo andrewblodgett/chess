@@ -57,7 +57,7 @@ public class MySQLDataAccess implements DataAccess {
         """,
                 """
         CREATE TABLE IF NOT EXISTS  gameData (
-            gameID INT NOT NULL AUTO_INCREMENT,
+            gameID INT NOT NULL,
             whiteUsername VARCHAR(256),
             blackUsername VARCHAR(256),
             gameName VARCHAR(256) NOT NULL,

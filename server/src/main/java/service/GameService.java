@@ -32,6 +32,9 @@ public class GameService {
             throw new UnauthorizedException("Not a recognized auth token");
         }
         var game = dataAccess.getGame(gameID);
+        if (game == null) {
+            throw new RuntimeException("Not a valid game ID");
+        }
         var whiteUsername = game.whiteUsername();
         var blackUsername = game.blackUsername();
         if (playerColor.equals("WHITE")) {

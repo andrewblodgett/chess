@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.LinkedTreeMap;
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import dataaccess.MySQLDataAccess;
 import datamodel.AuthData;
@@ -41,7 +42,12 @@ public class Server {
     }
 
     private void clear(Context ctx) {
-        userService.clear();
+        try {
+            userService.clear();
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("{ \"message\": \"Error: not able to clear database\" }");
+        }
     }
 
     private void register(Context ctx) {
@@ -61,9 +67,9 @@ public class Server {
             } catch (UserAlreadyRegisteredException e) {
                 response = "{ \"message\": \"Error: already taken\" }";
                 ctx.status(403);
-            } catch (Exception e) {
+            } catch (DataAccessException e) {
                 response = ERROR_RESPONSE;
-                ctx.status(400);
+                ctx.status(500);
             }
 
         }
@@ -88,7 +94,7 @@ public class Server {
                 ctx.status(401);
             } catch (Exception e) {
                 response = ERROR_RESPONSE;
-                ctx.status(400);
+                ctx.status(500);
             }
 
         }
@@ -112,7 +118,7 @@ public class Server {
                 ctx.status(401);
             } catch (Exception e) {
                 response = ERROR_RESPONSE;
-                ctx.status(400);
+                ctx.status(500);
             }
 
         }
@@ -137,7 +143,7 @@ public class Server {
                 ctx.status(401);
             } catch (Exception e) {
                 response = ERROR_RESPONSE;
-                ctx.status(400);
+                ctx.status(500);
             }
 
         }
@@ -152,7 +158,7 @@ public class Server {
         var validColors = new ArrayList<String>();
         validColors.add("WHITE");
         validColors.add("BLACK");
-        if (request == null || !validColors.contains(request.playerColor())) {
+        if (request == null || !validColors.contains(request.playerColor()) || request.gameID() < 0) {
             response = ERROR_RESPONSE;
             ctx.status(400);
         } else {
@@ -164,6 +170,8 @@ public class Server {
             } catch (ColorAlreadyTakenException e) {
                 response = "{ \"message\": \"Error: already taken\" }";
                 ctx.status(403);
+            } catch (DataAccessException e) {
+                ctx.status(500);
             } catch (Exception e) {
                 response = ERROR_RESPONSE;
                 ctx.status(400);
@@ -196,6 +204,9 @@ public class Server {
             } catch (UnauthorizedException e) {
                 response = "{ \"message\": \"Error: unauthorized\" }";
                 ctx.status(401);
+            } catch (DataAccessException e) {
+                response = ERROR_RESPONSE;
+                ctx.status(500);
             } catch (Exception e) {
                 response = ERROR_RESPONSE;
                 ctx.status(400);
