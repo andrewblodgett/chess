@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import datamodel.AuthData;
 import datamodel.UserData;
 
@@ -38,7 +39,11 @@ public class UserService {
     }
 
     public void logout(String authToken) {
+        if (dataAccess.getAuth(authToken) == null) {
+            throw new UnauthorizedException("Not a recognized auth token");
+        }
         dataAccess.deleteAuth(authToken);
+
     }
 
     public void clear() {

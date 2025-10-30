@@ -18,6 +18,9 @@ public class GameService {
 
     public GameData createGame(String authToken, String gameName) {
         var auth = dataAccess.getAuth(authToken);
+        if (auth == null) {
+            throw new UnauthorizedException("Not a recognized auth token");
+        }
         var newGame = new GameData(gameIDCounter++, null, null, gameName, new ChessGame());
         dataAccess.createGame(newGame);
         return newGame;
@@ -25,6 +28,9 @@ public class GameService {
 
     public void joinGame(String authToken, int gameID, String playerColor) {
         var auth = dataAccess.getAuth(authToken);
+        if (auth == null) {
+            throw new UnauthorizedException("Not a recognized auth token");
+        }
         var game = dataAccess.getGame(gameID);
         var whiteUsername = game.whiteUsername();
         var blackUsername = game.blackUsername();
@@ -47,6 +53,9 @@ public class GameService {
 
     public Collection<GameData> listGames(String authToken) {
         var auth = dataAccess.getAuth(authToken);
+        if (auth == null) {
+            throw new UnauthorizedException("Not a recognized auth token");
+        }
         return dataAccess.listGames();
     }
 }

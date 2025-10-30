@@ -6,6 +6,7 @@ import com.google.gson.Gson.*;
 import datamodel.AuthData;
 import datamodel.GameData;
 import datamodel.UserData;
+import service.UnauthorizedException;
 
 import java.sql.*;
 import java.util.Collection;
@@ -191,7 +192,7 @@ public class MySQLDataAccess implements DataAccess {
     @Override
     public void deleteAuth(String authToken) {
         try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("DELETE FROM authData WHERE id=?")) {
+            try (var preparedStatement = conn.prepareStatement("DELETE FROM authData WHERE authToken=?")) {
                 preparedStatement.setString(1, authToken);
                 preparedStatement.executeUpdate();
             }
@@ -208,7 +209,7 @@ public class MySQLDataAccess implements DataAccess {
             preparedStatement.setString(1, authToken);
             try (var result = preparedStatement.executeQuery()) {
                 while (result.next()) {
-                    return new AuthData(result.getString("authData"), result.getString("username"));
+                    return new AuthData(result.getString("authToken"), result.getString("username"));
                 }
             }
         } catch (SQLException e) {
