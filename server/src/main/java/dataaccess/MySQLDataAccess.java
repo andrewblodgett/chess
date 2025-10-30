@@ -7,6 +7,7 @@ import datamodel.UserData;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.List;
 
@@ -14,7 +15,14 @@ public class MySQLDataAccess implements DataAccess {
 
 
     public static void main(String[] args) {
-        new MySQLDataAccess();
+
+        MySQLDataAccess m = new MySQLDataAccess();
+        m.clear();
+        m.configureDatabase();
+        m.createUser(new UserData("jimothy", "password123", "123@dfsfds.cm"));
+        m.createUser(new UserData("jimmy", "password123", "113456456456@fds.cm"));
+        m.createUser(new UserData("tomithoi", "password123", "1@dfsfds.cm"));
+        System.out.println(m.getUser("jimmy"));
     }
 
     public MySQLDataAccess() throws DataAccessException {
@@ -26,31 +34,29 @@ public class MySQLDataAccess implements DataAccess {
         String[] statements = {
                 """
         CREATE TABLE IF NOT EXISTS  authData (
-            `authToken` VARCHAR(256) NOT NULL,
-            `username` VARCHAR(256) NOT NULL,
-            PRIMARY KEY (`authToken`),
+            authToken VARCHAR(256) NOT NULL,
+            username VARCHAR(256) NOT NULL,
+            PRIMARY KEY (authToken),
             INDEX (username)
         )
         """,
                 """
         CREATE TABLE IF NOT EXISTS  userData (
-            `id` INT NOT NULL AUTO_INCREMENT,
-            `email` VARCHAR(256) NOT NULL,
-            `username` VARCHAR(256) NOT NULL,
-            `password` VARCHAR(256) NOT NULL,
-            PRIMARY KEY (`id`),
-            INDEX (username),
+            username VARCHAR(256) NOT NULL,
+            password VARCHAR(256) NOT NULL,
+            email VARCHAR(256) NOT NULL,
+            PRIMARY KEY (username),
             INDEX (email)
         )
         """,
                 """
         CREATE TABLE IF NOT EXISTS  gameData (
-            `id` INT NOT NULL AUTO_INCREMENT,
-            `whiteUsername` VARCHAR(256),
-            `blackUsername` VARCHAR(256),
-            `gameName` VARCHAR(256) NOT NULL,
-            `game` BLOB NOT NULL,
-            PRIMARY KEY (`id`),
+            id INT NOT NULL AUTO_INCREMENT,
+            whiteUsername VARCHAR(256),
+            blackUsername VARCHAR(256),
+            gameName VARCHAR(256) NOT NULL,
+            game BLOB NOT NULL,
+            PRIMARY KEY (id),
             INDEX (gameName)
         )
         """
@@ -67,16 +73,41 @@ public class MySQLDataAccess implements DataAccess {
 
     @Override
     public void clear() {
-
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement("DROP DATABASE chess");
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to remove database");
+        }
     }
 
     @Override
     public void createUser(UserData user) {
-
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement("INSERT INTO userData VALUES (?, ?, ?)");
+            preparedStatement.setString(1, user.username());
+            preparedStatement.setString(2, user.password());
+            preparedStatement.setString(3, user.email());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to add user because " + e.toString());
+        }
     }
 
     @Override
     public UserData getUser(String username) {
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement("SELECT * FROM userData WHERE username=?");
+            preparedStatement.setString(1, username);
+            try (var result = preparedStatement.executeQuery()) {
+                while (result.next()) {
+                    return new UserData(result.getString("username"), result.getString("password"), result.getString("email"));
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to get user because " + e.toString());
+        }
         return null;
     }
 
