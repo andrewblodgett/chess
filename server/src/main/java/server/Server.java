@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.internal.LinkedTreeMap;
 import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
+import dataaccess.MySQLDataAccess;
 import datamodel.AuthData;
 import datamodel.GameData;
 import datamodel.JoinGameRequest;
@@ -20,7 +21,8 @@ import java.util.Map;
 public class Server {
 
     private final Javalin server;
-    private final DataAccess dataAccess = new MemoryDataAccess();
+    //    private final DataAccess dataAccess = new MemoryDataAccess();
+    private final DataAccess dataAccess = new MySQLDataAccess();
     private final UserService userService = new UserService(dataAccess);
     private final GameService gameService = new GameService(dataAccess);
 

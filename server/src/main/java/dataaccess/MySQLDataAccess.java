@@ -9,24 +9,25 @@ import datamodel.UserData;
 
 import java.sql.*;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 public class MySQLDataAccess implements DataAccess {
 
 
-    public static void main(String[] args) {
-
-        MySQLDataAccess m = new MySQLDataAccess();
-        m.clear();
-        m.configureDatabase();
-        m.createUser(new UserData("jimothy", "password123", "123@dfsfds.cm"));
-        m.createUser(new UserData("jimmy", "password123", "113456456456@fds.cm"));
-        m.createUser(new UserData("tomithoi", "password123", "1@dfsfds.cm"));
-        System.out.println(m.getUser("jimmy"));
-        m.createGame(new GameData(42, "jim", "john", "sdfsdfsd", new ChessGame()));
-        System.out.println(m.getGame(42));
-    }
+//    public static void main(String[] args) {
+//
+//        MySQLDataAccess m = new MySQLDataAccess();
+//        m.clear();
+//        m.configureDatabase();
+//        m.createUser(new UserData("jimothy", "password123", "123@dfsfds.cm"));
+//        m.createUser(new UserData("jimmy", "password123", "113456456456@fds.cm"));
+//        m.createUser(new UserData("tomithoi", "password123", "1@dfsfds.cm"));
+//        System.out.println(m.getUser("jimmy"));
+//        m.createGame(new GameData(42, "jim", "john", "sdfsdfsd", new ChessGame()));
+//        System.out.println(m.getGame(42));
+//    }
 
     public MySQLDataAccess() throws DataAccessException {
         configureDatabase();
@@ -77,7 +78,11 @@ public class MySQLDataAccess implements DataAccess {
     @Override
     public void clear() {
         try (var conn = DatabaseManager.getConnection()) {
-            var preparedStatement = conn.prepareStatement("DROP DATABASE chess");
+            var preparedStatement = conn.prepareStatement("DELETE FROM userData");
+            preparedStatement.executeUpdate();
+            preparedStatement = conn.prepareStatement("DELETE FROM authData");
+            preparedStatement.executeUpdate();
+            preparedStatement = conn.prepareStatement("DELETE FROM gameData");
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException("failed to remove database");
@@ -150,7 +155,20 @@ public class MySQLDataAccess implements DataAccess {
 
     @Override
     public Collection<GameData> listGames() {
-        return List.of();
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement("SELECT * FROM gameData");
+            try (var result = preparedStatement.executeQuery()) {
+                var allGames = new HashSet<GameData>();
+                while (result.next()) {
+                    var gameMap = new Gson().fromJson(result.getString("game"), Map.class);
+                    allGames.add(new GameData(result.getInt("gameID"), result.getString("whiteUsername"), result.getString("blackUsername"), result.getString("gameName"), new ChessGame()));
+                }
+                return allGames;
+            }
+
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to get user because " + e.toString());
+        }
     }
 
     @Override
@@ -160,16 +178,42 @@ public class MySQLDataAccess implements DataAccess {
 
     @Override
     public void createAuth(AuthData authData) {
-
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement("INSERT INTO authData VALUES (?, ?)");
+            preparedStatement.setString(1, authData.authToken());
+            preparedStatement.setString(2, authData.username());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to add auth because " + e.toString());
+        }
     }
 
     @Override
     public void deleteAuth(String authToken) {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement("DELETE FROM authData WHERE id=?")) {
+                preparedStatement.setString(1, authToken);
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to delete auth because " + e.toString());
+        }
 
     }
 
     @Override
     public AuthData getAuth(String authToken) {
+        try (var conn = DatabaseManager.getConnection()) {
+            var preparedStatement = conn.prepareStatement("SELECT * FROM authData WHERE authToken=?");
+            preparedStatement.setString(1, authToken);
+            try (var result = preparedStatement.executeQuery()) {
+                while (result.next()) {
+                    return new AuthData(result.getString("authData"), result.getString("username"));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("failed to get auth because " + e.toString());
+        }
         return null;
     }
 }
