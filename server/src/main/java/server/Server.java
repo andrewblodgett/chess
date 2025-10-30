@@ -171,6 +171,7 @@ public class Server {
                 response = "{ \"message\": \"Error: already taken\" }";
                 ctx.status(403);
             } catch (DataAccessException e) {
+                response = ERROR_RESPONSE;
                 ctx.status(500);
             } catch (Exception e) {
                 response = ERROR_RESPONSE;
