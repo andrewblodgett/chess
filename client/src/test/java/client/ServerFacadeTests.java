@@ -23,6 +23,12 @@ public class ServerFacadeTests {
         server.stop();
     }
 
+    @Test
+    public void clear() {
+        assertDoesNotThrow(() -> {
+            facade.clear();
+        });
+    }
 
     @Test
     public void basicGetTest() {
@@ -32,9 +38,25 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void registerTest() {
+        assertDoesNotThrow(() -> {
+            var auth = facade.register("123", "123", "123");
+            System.out.println(auth);
+        });
+    }
+
+    @Test
+    public void loginTest() {
+        assertDoesNotThrow(() -> {
+            var auth = facade.login("123", "123");
+            System.out.println(auth);
+        });
+    }
+
+    @Test
     public void listGamesTest() {
         assertDoesNotThrow(() -> {
-            var games = facade.listGames("secret");
+            var games = facade.listGames(facade.register("222", "222", "222"));
             System.out.println(games);
         });
     }
