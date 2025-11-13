@@ -116,6 +116,7 @@ public class ServerFacade {
     }
 
     public void joinGame(String authToken, Long gameID, ChessGame.TeamColor playerColor) throws Exception {
-        var response = put("game", authToken, String.format("{ \"playerColor\":\"%s\", \"gameID\":\"%d\"}", playerColor == ChessGame.TeamColor.WHITE ? "WHITE" : "BLACK", gameID));
+        var response = put("game", authToken, String.format("{ \"playerColor\":\"%s\", \"gameID\":\"%d\"}",
+                playerColor == ChessGame.TeamColor.WHITE ? "WHITE" : "BLACK", gameID));
     }
 }

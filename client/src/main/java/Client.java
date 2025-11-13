@@ -155,7 +155,8 @@ public class Client {
 
     private void displayBoard(ChessBoard board, ChessGame.TeamColor teamColor) {
         var emptySquareString = new String[]{"                      ", "                       ", "                       ",
-                "                       ", "                       ", "                       ", "                       ", "                       "};
+                "                       ", "                       ", "                       ",
+                "                       ", "                       "};
         var pawnStrings = new String[]{
                 "                      ", "         (PP)          ", "         /  \\          ",
                 "      __/    \\__       ", "     {_        _}      ", "     __}      {__      ", "    {____________}     "
@@ -180,8 +181,7 @@ public class Client {
                 "      K══╬╬══K        ", "         K║║K          ", "        ╔═╬╬═╗         ",
                 "     (║║║║║║║║║║)      ", "       K╬╬╬╬╬╬K        ", "     .. )╬╬╬╬( ..      ", "   (╬╬╬╬╬╬╬╬╬╬╬╬╬╬)    "
         };
-        Map<Integer, String> coordMap = Map.of(1, "A",
-                2, "B",
+        Map<Integer, String> coordMap = Map.of(1, "A", 2, "B",
                 3, "C",
                 4, "D",
                 5, "E",
@@ -193,7 +193,8 @@ public class Client {
             String row = "";
             for (int j = 0; j < 7; j++) {
                 for (int c = 8; c > 0; c--) {
-                    var piece = board.getPiece(new ChessPosition(teamColor.equals(ChessGame.TeamColor.WHITE) ? r : (9 - r), teamColor.equals(ChessGame.TeamColor.WHITE) ? c : (9 - c)));
+                    var piece = board.getPiece(
+                            new ChessPosition(teamColor.equals(ChessGame.TeamColor.WHITE) ? r : (9 - r), teamColor.equals(ChessGame.TeamColor.WHITE) ? c : (9 - c)));
                     if (piece != null && piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
                         row += SET_TEXT_COLOR_BLUE;
                     } else {
