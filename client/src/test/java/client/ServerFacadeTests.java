@@ -32,13 +32,6 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void basicGetTest() {
-        assertThrows(Exception.class, () -> {
-            facade.get("gobbledygook", "");
-        });
-    }
-
-    @Test
     public void registerTest() {
         assertDoesNotThrow(() -> {
             var auth = facade.register("123", "123", "123");
@@ -48,9 +41,30 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void registerDuplicateTest() {
+        assertDoesNotThrow(() -> {
+            var auth = facade.register("2212", "2212", "2212");
+            System.out.println(auth);
+        });
+        assertThrows(Exception.class, () -> {
+            var auth = facade.register("2212", "2212", "2212");
+            System.out.println(auth);
+        });
+    }
+
+    @Test
     public void logoutTest() {
         assertDoesNotThrow(() -> {
             var auth = facade.register("333", "333", "333");
+            facade.logout(auth);
+            System.out.println(auth);
+        });
+    }
+
+    @Test
+    public void logoutInvalidAuthTest() {
+        assertThrows(Exception.class, () -> {
+            var auth = "haha get pranked";
             facade.logout(auth);
             System.out.println(auth);
         });
@@ -68,10 +82,28 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void loginBadPasswordTest() {
+        assertThrows(Exception.class, () -> {
+            var auth = facade.register("gg", "444", "444");
+            facade.logout(auth);
+            auth = facade.login("gg", "gg");
+            System.out.println(auth);
+        });
+    }
+
+    @Test
     public void createGameTest() {
         assertDoesNotThrow(() -> {
             var games = facade.createGame(facade.register("555", "555", "555"), "my game");
             System.out.println(games);
+        });
+    }
+
+    @Test
+    public void createGameInvalidAuthTest() {
+        assertThrows(Exception.class, () -> {
+            var auth = "haha get pranked";
+            facade.createGame(auth, auth);
         });
     }
 
