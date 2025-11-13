@@ -116,12 +116,28 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void listGamesInvalidAuthTest() {
+        assertThrows(Exception.class, () -> {
+            var auth = "haha get pranked";
+            facade.listGames(auth);
+        });
+    }
+
+    @Test
     public void joinGameTest() {
         assertDoesNotThrow(() -> {
             var auth = facade.register("666", "666", "666");
             var gameID = facade.createGame(auth, "my game");
             System.out.println(gameID);
             facade.joinGame(auth, gameID, ChessGame.TeamColor.WHITE);
+        });
+    }
+
+    @Test
+    public void joinGameInvalidIDTest() {
+        assertThrows(Exception.class, () -> {
+            var auth = facade.register("999", "5599", "9");
+            facade.joinGame(auth, 324324L, ChessGame.TeamColor.WHITE);
         });
     }
 
