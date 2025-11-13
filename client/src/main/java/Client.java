@@ -154,29 +154,29 @@ public class Client {
     }
 
     private void displayBoard(ChessBoard board, ChessGame.TeamColor teamColor) {
-        var EMPTY_SQUARE_STRING = new String[]{"                      ", "                       ", "                       ",
+        var emptySquareString = new String[]{"                      ", "                       ", "                       ",
                 "                       ", "                       ", "                       ", "                       ", "                       "};
-        var PAWN_STRINGS = new String[]{
+        var pawnStrings = new String[]{
                 "                      ", "         (PP)          ", "         /  \\          ",
                 "      __/    \\__       ", "     {_        _}      ", "     __}      {__      ", "    {____________}     "
         };
-        var BISHOP_STRINGS = new String[]{
+        var bishopStrings = new String[]{
                 "        (BB)          ", "          )(           ", "         /  \\          ",
                 "      (OOOOOOOO)       ", "        /    \\         ", "     .. )    ( ..      ", "   (______________)    "
         };
-        var ROOK_STRINGS = new String[]{
+        var rookStrings = new String[]{
                 "  R  R  R  R  R  R    ", "  {!__!__!__!__!__!}   ", "    { |   |    | }     ",
                 "    {   |    |   }     ", "    { |    |   | }     ", "    {   |    |   }     ", "  {{{{{{{{{}}}}}}}}}   "
         };
-        var KNIGHT_STRINGS = new String[]{
+        var knightStrings = new String[]{
                 "  / N N N N N N N\\    ", "  / / N N N   (0)  \\   ", " / / / N   ______  .\\  ",
                 "  / / /   /      \\_/   ", "    |      \\_          ", "    |         \\___     ", "  /________________\\   "
         };
-        var QUEEN_STRINGS = new String[]{
+        var queenStrings = new String[]{
                 "      ~(*QQ*)~        ", "         )##(          ", "        /Q**Q\\         ",
                 "     (Q*QQQQQQ*Q)      ", "        \\Q**Q/         ", "     ..  )##(  ..      ", "   (*Q*Q*Q*Q*Q*Q*Q)    "
         };
-        var KING_STRINGS = new String[]{
+        var kingStrings = new String[]{
                 "      K══╬╬══K        ", "         K║║K          ", "        ╔═╬╬═╗         ",
                 "     (║║║║║║║║║║)      ", "       K╬╬╬╬╬╬K        ", "     .. )╬╬╬╬( ..      ", "   (╬╬╬╬╬╬╬╬╬╬╬╬╬╬)    "
         };
@@ -219,16 +219,16 @@ public class Client {
                         row += SET_TEXT_COLOR_RED;
                     }
                     if (piece == null) {
-                        row += EMPTY_SQUARE_STRING[j];
+                        row += emptySquareString[j];
                     } else {
                         switch (piece.getPieceType()) {
-                            case PAWN -> row += PAWN_STRINGS[j];
-                            case BISHOP -> row += BISHOP_STRINGS[j];
-                            case KNIGHT -> row += KNIGHT_STRINGS[j];
-                            case ROOK -> row += ROOK_STRINGS[j];
-                            case QUEEN -> row += QUEEN_STRINGS[j];
-                            case KING -> row += KING_STRINGS[j];
-                            case null, default -> row += EMPTY_SQUARE_STRING[j];
+                            case PAWN -> row += pawnStrings[j];
+                            case BISHOP -> row += bishopStrings[j];
+                            case KNIGHT -> row += knightStrings[j];
+                            case ROOK -> row += rookStrings[j];
+                            case QUEEN -> row += queenStrings[j];
+                            case KING -> row += kingStrings[j];
+                            case null, default -> row += emptySquareString[j];
                         }
                     }
                 }
