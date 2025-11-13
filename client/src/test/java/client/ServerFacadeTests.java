@@ -42,13 +42,26 @@ public class ServerFacadeTests {
         assertDoesNotThrow(() -> {
             var auth = facade.register("123", "123", "123");
             System.out.println(auth);
+            facade.logout(auth);
+        });
+    }
+
+    @Test
+    public void logoutTest() {
+        assertDoesNotThrow(() -> {
+            var auth = facade.register("333", "333", "333");
+            facade.logout(auth);
+            System.out.println(auth);
         });
     }
 
     @Test
     public void loginTest() {
         assertDoesNotThrow(() -> {
-            var auth = facade.login("123", "123");
+            var auth = facade.register("444", "444", "444");
+            System.out.println(auth);
+            facade.logout(auth);
+            auth = facade.login("444", "444");
             System.out.println(auth);
         });
     }

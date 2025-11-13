@@ -50,12 +50,21 @@ public class ServerFacade {
         return response;
     }
 
-    public void clear() throws Exception {
-        String urlString = String.format(Locale.getDefault(), "http://localhost:%d/db", port);
+    public void delete(String path, String authToken) throws Exception {
+        String urlString = String.format(Locale.getDefault(), "http://localhost:%d/%s", port, path);
         var request = HttpRequest.newBuilder().uri(new URI(urlString))
+                .header("authorization", authToken)
                 .DELETE()
                 .build();
-        httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 400) {
+        } else {
+            throw new Exception("Request returned a status code of " + response.statusCode());
+        }
+    }
+
+    public void clear() throws Exception {
+        delete("db", "");
     }
 
     public String register(String username, String password, String email) throws Exception {
@@ -64,8 +73,14 @@ public class ServerFacade {
         return mapped.get("authToken").toString();
     }
 
-    public String login(String username, String password) {
-        return "";
+    public String login(String username, String password) throws Exception {
+        var response = post("session", "", String.format("{ \"username\":\"%s\", \"password\":\"%s\"}", username, password));
+        var mapped = deserializer.fromJson(response.body(), Map.class);
+        return mapped.get("authToken").toString();
+    }
+
+    public void logout(String authToken) throws Exception {
+        delete("session", authToken);
     }
 
     public String listGames(String authToken) throws Exception {
