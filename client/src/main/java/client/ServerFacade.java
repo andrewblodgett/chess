@@ -26,7 +26,7 @@ public class ServerFacade {
         this.port = port;
     }
 
-    public HttpResponse<String> get(String path, String authToken) throws Exception {
+    private HttpResponse<String> get(String path, String authToken) throws Exception {
         String urlString = String.format(Locale.getDefault(), "http://localhost:%d/%s", port, path);
 
         var request = HttpRequest.newBuilder().uri(new URI(urlString))
@@ -40,7 +40,7 @@ public class ServerFacade {
         return response;
     }
 
-    public HttpResponse<String> post(String path, String authToken, String body) throws Exception {
+    private HttpResponse<String> post(String path, String authToken, String body) throws Exception {
         String urlString = String.format(Locale.getDefault(), "http://localhost:%d/%s", port, path);
 
         var request = HttpRequest.newBuilder().uri(new URI(urlString))
@@ -55,7 +55,7 @@ public class ServerFacade {
         return response;
     }
 
-    public HttpResponse<String> put(String path, String authToken, String body) throws Exception {
+    private HttpResponse<String> put(String path, String authToken, String body) throws Exception {
         String urlString = String.format(Locale.getDefault(), "http://localhost:%d/%s", port, path);
 
         var request = HttpRequest.newBuilder().uri(new URI(urlString))
@@ -70,7 +70,7 @@ public class ServerFacade {
         return response;
     }
 
-    public void delete(String path, String authToken) throws Exception {
+    private void delete(String path, String authToken) throws Exception {
         String urlString = String.format(Locale.getDefault(), "http://localhost:%d/%s", port, path);
         var request = HttpRequest.newBuilder().uri(new URI(urlString))
                 .header("authorization", authToken)
