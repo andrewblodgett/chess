@@ -1,5 +1,6 @@
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import client.ServerFacade;
 
@@ -157,30 +158,6 @@ public class Client {
         var emptySquareString = new String[]{"                      ", "                       ", "                       ",
                 "                       ", "                       ", "                       ",
                 "                       ", "                       "};
-        var pawnStrings = new String[]{
-                "                      ", "         (PP)          ", "         /  \\          ",
-                "      __/    \\__       ", "     {_        _}      ", "     __}      {__      ", "    {____________}     "
-        };
-        var bishopStrings = new String[]{
-                "        (BB)          ", "          )(           ", "         /  \\          ",
-                "      (OOOOOOOO)       ", "        /    \\         ", "     .. )    ( ..      ", "   (______________)    "
-        };
-        var rookStrings = new String[]{
-                "  R  R  R  R  R  R    ", "  {!__!__!__!__!__!}   ", "    { |   |    | }     ",
-                "    {   |    |   }     ", "    { |    |   | }     ", "    {   |    |   }     ", "  {{{{{{{{{}}}}}}}}}   "
-        };
-        var knightStrings = new String[]{
-                "  / N N N N N N N\\    ", "  / / N N N   (0)  \\   ", " / / / N   ______  .\\  ",
-                "  / / /   /      \\_/   ", "    |      \\_          ", "    |         \\___     ", "  /________________\\   "
-        };
-        var queenStrings = new String[]{
-                "      ~(*QQ*)~        ", "         )##(          ", "        /Q**Q\\         ",
-                "     (Q*QQQQQQ*Q)      ", "        \\Q**Q/         ", "     ..  )##(  ..      ", "   (*Q*Q*Q*Q*Q*Q*Q)    "
-        };
-        var kingStrings = new String[]{
-                "      K══╬╬══K        ", "         K║║K          ", "        ╔═╬╬═╗         ",
-                "     (║║║║║║║║║║)      ", "       K╬╬╬╬╬╬K        ", "     .. )╬╬╬╬( ..      ", "   (╬╬╬╬╬╬╬╬╬╬╬╬╬╬)    "
-        };
         Map<Integer, String> coordMap = Map.of(1, "A", 2, "B",
                 3, "C",
                 4, "D",
@@ -194,7 +171,8 @@ public class Client {
             for (int j = 0; j < 7; j++) {
                 for (int c = 8; c > 0; c--) {
                     var piece = board.getPiece(
-                            new ChessPosition(teamColor.equals(ChessGame.TeamColor.WHITE) ? r : (9 - r), teamColor.equals(ChessGame.TeamColor.WHITE) ? c : (9 - c)));
+                            new ChessPosition(teamColor.equals(ChessGame.TeamColor.WHITE) ? r : (9 - r),
+                                    teamColor.equals(ChessGame.TeamColor.WHITE) ? c : (9 - c)));
                     if (piece != null && piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
                         row += SET_TEXT_COLOR_BLUE;
                     } else {
@@ -222,15 +200,7 @@ public class Client {
                     if (piece == null) {
                         row += emptySquareString[j];
                     } else {
-                        switch (piece.getPieceType()) {
-                            case PAWN -> row += pawnStrings[j];
-                            case BISHOP -> row += bishopStrings[j];
-                            case KNIGHT -> row += knightStrings[j];
-                            case ROOK -> row += rookStrings[j];
-                            case QUEEN -> row += queenStrings[j];
-                            case KING -> row += kingStrings[j];
-                            case null, default -> row += emptySquareString[j];
-                        }
+                        row += getPieceRowHelper(piece.getPieceType(), j);
                     }
                 }
                 row += "\n";
@@ -238,5 +208,44 @@ public class Client {
             formattedBoard += row;
         }
         System.out.println(formattedBoard);
+    }
+
+    private String getPieceRowHelper(ChessPiece.PieceType type, int j) {
+        var emptySquareString = new String[]{"                      ", "                       ", "                       ",
+                "                       ", "                       ", "                       ",
+                "                       ", "                       "};
+        var pawnStrings = new String[]{
+                "                      ", "         (PP)          ", "         /  \\          ",
+                "      __/    \\__       ", "     {_        _}      ", "     __}      {__      ", "    {____________}     "
+        };
+        var bishopStrings = new String[]{
+                "        (BB)          ", "          )(           ", "         /  \\          ",
+                "      (OOOOOOOO)       ", "        /    \\         ", "     .. )    ( ..      ", "   (______________)    "
+        };
+        var rookStrings = new String[]{
+                "  R  R  R  R  R  R    ", "  {!__!__!__!__!__!}   ", "    { |   |    | }     ",
+                "    {   |    |   }     ", "    { |    |   | }     ", "    {   |    |   }     ", "  {{{{{{{{{}}}}}}}}}   "
+        };
+        var knightStrings = new String[]{
+                "  / N N N N N N N\\    ", "  / / N N N   (0)  \\   ", " / / / N   ______  .\\  ",
+                "  / / /   /      \\_/   ", "    |      \\_          ", "    |         \\___     ", "  /________________\\   "
+        };
+        var queenStrings = new String[]{
+                "      ~(*QQ*)~        ", "         )##(          ", "        /Q**Q\\         ",
+                "     (Q*QQQQQQ*Q)      ", "        \\Q**Q/         ", "     ..  )##(  ..      ", "   (*Q*Q*Q*Q*Q*Q*Q)    "
+        };
+        var kingStrings = new String[]{
+                "      K══╬╬══K        ", "         K║║K          ", "        ╔═╬╬═╗         ",
+                "     (║║║║║║║║║║)      ", "       K╬╬╬╬╬╬K        ", "     .. )╬╬╬╬( ..      ", "   (╬╬╬╬╬╬╬╬╬╬╬╬╬╬)    "
+        };
+        return switch (type) {
+            case PAWN -> pawnStrings[j];
+            case BISHOP -> bishopStrings[j];
+            case KNIGHT -> knightStrings[j];
+            case ROOK -> rookStrings[j];
+            case QUEEN -> queenStrings[j];
+            case KING -> kingStrings[j];
+            case null, default -> emptySquareString[j];
+        };
     }
 }
