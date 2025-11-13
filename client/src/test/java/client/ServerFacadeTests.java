@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import org.junit.jupiter.api.*;
 import server.Server;
 
@@ -23,8 +24,8 @@ public class ServerFacadeTests {
         server.stop();
     }
 
-    @Test
-    public void clear() {
+    @BeforeAll
+    public static void clear() {
         assertDoesNotThrow(() -> {
             facade.clear();
         });
@@ -67,10 +68,28 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void createGameTest() {
+        assertDoesNotThrow(() -> {
+            var games = facade.createGame(facade.register("555", "555", "555"), "my game");
+            System.out.println(games);
+        });
+    }
+
+    @Test
     public void listGamesTest() {
         assertDoesNotThrow(() -> {
             var games = facade.listGames(facade.register("222", "222", "222"));
             System.out.println(games);
+        });
+    }
+
+    @Test
+    public void joinGameTest() {
+        assertDoesNotThrow(() -> {
+            var auth = facade.register("666", "666", "666");
+            var gameID = facade.createGame(auth, "my game");
+            System.out.println(gameID);
+            facade.joinGame(auth, gameID, ChessGame.TeamColor.WHITE);
         });
     }
 

@@ -1,7 +1,10 @@
 package client;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.google.gson.ToNumberPolicy;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -14,7 +17,9 @@ public class ServerFacade {
 
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private final int port;
-    private final static Gson deserializer = new Gson();
+    private final static Gson deserializer = new GsonBuilder()
+            .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
+            .create();
 
 
     public ServerFacade(int port) {
@@ -40,6 +45,21 @@ public class ServerFacade {
 
         var request = HttpRequest.newBuilder().uri(new URI(urlString))
                 .POST(HttpRequest.BodyPublishers.ofString(body))
+                .header("authorization", authToken)
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 400) {
+        } else {
+            throw new Exception("Request returned a status code of " + response.statusCode());
+        }
+        return response;
+    }
+
+    public HttpResponse<String> put(String path, String authToken, String body) throws Exception {
+        String urlString = String.format(Locale.getDefault(), "http://localhost:%d/%s", port, path);
+
+        var request = HttpRequest.newBuilder().uri(new URI(urlString))
+                .PUT(HttpRequest.BodyPublishers.ofString(body))
                 .header("authorization", authToken)
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -83,8 +103,20 @@ public class ServerFacade {
         delete("session", authToken);
     }
 
+    public Long createGame(String authToken, String gameName) throws Exception {
+        var response = post("game", authToken, String.format("{ \"gameName\":\"%s\" }", gameName));
+        System.out.println(response.body());
+        var mapped = deserializer.fromJson(response.body(), Map.class);
+        return (Long) mapped.get("gameID");
+
+    }
+
     public String listGames(String authToken) throws Exception {
         var response = get("game", authToken);
         return response.body();
+    }
+
+    public void joinGame(String authToken, Long gameID, ChessGame.TeamColor playerColor) throws Exception {
+        var response = put("game", authToken, String.format("{ \"playerColor\":\"%s\", \"gameID\":\"%d\"}", playerColor == ChessGame.TeamColor.WHITE ? "WHITE" : "BLACK", gameID));
     }
 }
