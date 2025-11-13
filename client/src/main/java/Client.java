@@ -38,10 +38,7 @@ public class Client {
     }
 
     static void main() {
-        var board = new ChessBoard();
-        board.resetBoard();
-        new Client().displayBoard(board, ChessGame.TeamColor.WHITE);
-//        new Client().repl();
+        new Client().repl();
     }
 
     public void repl() {
@@ -160,70 +157,37 @@ public class Client {
         var EMPTY_SQUARE_STRING = new String[]{"                      ", "                       ", "                       ",
                 "                       ", "                       ", "                       ", "                       ", "                       "};
         var PAWN_STRINGS = new String[]{
-                "                      ",
-                "         (PP)          ",
-                "         /  \\          ",
-                "      __/    \\__       ",
-                "     {_        _}      ",
-                "     __}      {__      ",
-                "    {____________}     "
+                "                      ", "         (PP)          ", "         /  \\          ",
+                "      __/    \\__       ", "     {_        _}      ", "     __}      {__      ", "    {____________}     "
         };
         var BISHOP_STRINGS = new String[]{
-                "        (BB)          ",
-                "          )(           ",
-                "         /  \\          ",
-                "      (OOOOOOOO)       ",
-                "        /    \\         ",
-                "     .. )    ( ..      ",
-                "   (______________)    "
+                "        (BB)          ", "          )(           ", "         /  \\          ",
+                "      (OOOOOOOO)       ", "        /    \\         ", "     .. )    ( ..      ", "   (______________)    "
         };
         var ROOK_STRINGS = new String[]{
-                "  R  R  R  R  R  R    ",
-                "  {!__!__!__!__!__!}   ",
-                "    { |   |    | }     ",
-                "    {   |    |   }     ",
-                "    { |    |   | }     ",
-                "    {   |    |   }     ",
-                "  {{{{{{{{{}}}}}}}}}   "
+                "  R  R  R  R  R  R    ", "  {!__!__!__!__!__!}   ", "    { |   |    | }     ",
+                "    {   |    |   }     ", "    { |    |   | }     ", "    {   |    |   }     ", "  {{{{{{{{{}}}}}}}}}   "
         };
         var KNIGHT_STRINGS = new String[]{
-                "  / N N N N N N N\\    ",
-                "  / / N N N   (0)  \\   ",
-                " / / / N   ______  .\\  ",
-                "  / / /   /      \\_/   ",
-                "    |      \\_          ",
-                "    |         \\___     ",
-                "  /________________\\   "
+                "  / N N N N N N N\\    ", "  / / N N N   (0)  \\   ", " / / / N   ______  .\\  ",
+                "  / / /   /      \\_/   ", "    |      \\_          ", "    |         \\___     ", "  /________________\\   "
         };
         var QUEEN_STRINGS = new String[]{
-                "      ~(*QQ*)~        ",
-                "         )##(          ",
-                "        /Q**Q\\         ",
-                "     (Q*QQQQQQ*Q)      ",
-                "        \\Q**Q/         ",
-                "     ..  )##(  ..      ",
-                "   (*Q*Q*Q*Q*Q*Q*Q)    "
+                "      ~(*QQ*)~        ", "         )##(          ", "        /Q**Q\\         ",
+                "     (Q*QQQQQQ*Q)      ", "        \\Q**Q/         ", "     ..  )##(  ..      ", "   (*Q*Q*Q*Q*Q*Q*Q)    "
         };
         var KING_STRINGS = new String[]{
-                "      K══╬╬══K        ",
-                "         K║║K          ",
-                "        ╔═╬╬═╗         ",
-                "     (║║║║║║║║║║)      ",
-                "       K╬╬╬╬╬╬K        ",
-                "     .. )╬╬╬╬( ..      ",
-                "   (╬╬╬╬╬╬╬╬╬╬╬╬╬╬)    "
+                "      K══╬╬══K        ", "         K║║K          ", "        ╔═╬╬═╗         ",
+                "     (║║║║║║║║║║)      ", "       K╬╬╬╬╬╬K        ", "     .. )╬╬╬╬( ..      ", "   (╬╬╬╬╬╬╬╬╬╬╬╬╬╬)    "
         };
-        Map<Integer, String> coordMap = Map.of(
-                1, "A",
+        Map<Integer, String> coordMap = Map.of(1, "A",
                 2, "B",
                 3, "C",
                 4, "D",
                 5, "E",
                 6, "F",
                 7, "G",
-                8, "H"
-        );
-
+                8, "H");
         String formattedBoard = SET_TEXT_BOLD;
         for (int r = 8; r > 0; r--) {
             String row = "";
@@ -267,7 +231,6 @@ public class Client {
                             case null, default -> row += EMPTY_SQUARE_STRING[j];
                         }
                     }
-
                 }
                 row += "\n";
             }
