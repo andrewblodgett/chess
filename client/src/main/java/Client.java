@@ -38,9 +38,6 @@ public class Client {
         state = State.LOGGED_OUT;
     }
 
-    static void main() {
-        new Client().repl();
-    }
 
     public void repl() {
         System.out.println("Welcome to 240 chess. Type help to get started.");
@@ -63,7 +60,7 @@ public class Client {
                     state = State.LOGGED_IN;
                     displayHelp();
                 } catch (Exception e) {
-                    System.out.println(e.toString());
+                    System.out.println("There was an issue with your registration. That username may already be taken.");
                 }
                 break;
             case "logout":
@@ -71,7 +68,7 @@ public class Client {
                     facade.logout(authToken);
                     state = State.LOGGED_OUT;
                 } catch (Exception e) {
-                    System.out.println(e.toString());
+                    System.out.println("Logout unsuccessful.");
                 }
                 break;
             case "login":
@@ -79,7 +76,7 @@ public class Client {
                     authToken = facade.login(command[1], command[2]);
                     state = State.LOGGED_IN;
                 } catch (Exception e) {
-                    System.out.println(e.toString());
+                    System.out.println("Unable to login. Verify that your username and password are correct.");
                 }
                 break;
             case "help":
@@ -105,7 +102,9 @@ public class Client {
                             ChessGame.TeamColor.BLACK);
                     var board = new ChessBoard();
                     board.resetBoard();
-                    displayBoard(board, ChessGame.TeamColor.BLACK);
+                    displayBoard(board, command[2].equalsIgnoreCase("white") ? ChessGame.TeamColor.WHITE :
+                            ChessGame.TeamColor.BLACK);
+                    state = State.IN_GAME;
                 } catch (Exception e) {
                     System.out.println("Unable to join game. Verify that you have the proper game ID and player color");
                 }
@@ -119,7 +118,7 @@ public class Client {
                 try {
                     facade.createGame(authToken, command[1]);
                 } catch (Exception e) {
-                    System.out.println("Unable to create a game" + e.toString());
+                    System.out.println("Unable to create a game. Are you logged in?");
                 }
                 break;
             default:
@@ -166,13 +165,14 @@ public class Client {
                 7, "G",
                 8, "H");
         String formattedBoard = SET_TEXT_BOLD;
+        boolean isBlack = teamColor.equals(ChessGame.TeamColor.BLACK);
         for (int r = 8; r > 0; r--) {
             String row = "";
             for (int j = 0; j < 7; j++) {
                 for (int c = 8; c > 0; c--) {
                     var piece = board.getPiece(
-                            new ChessPosition(teamColor.equals(ChessGame.TeamColor.WHITE) ? r : (9 - r),
-                                    teamColor.equals(ChessGame.TeamColor.WHITE) ? c : (9 - c)));
+                            new ChessPosition(isBlack ? r : (9 - r),
+                                    isBlack ? c : (9 - c)));
                     if (piece != null && piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
                         row += SET_TEXT_COLOR_BLUE;
                     } else {
@@ -187,7 +187,7 @@ public class Client {
 
                     }
                     if (j == 0) {
-                        row += r;
+                        row += isBlack ? (9 - r) : r;
                         row += coordMap.get(9 - c);
                     } else {
                         row += " ";
