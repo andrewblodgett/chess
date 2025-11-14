@@ -4,13 +4,13 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
+import com.google.gson.internal.LinkedTreeMap;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class ServerFacade {
 
@@ -19,7 +19,6 @@ public class ServerFacade {
     private final static Gson DESERIALIZER = new GsonBuilder()
             .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
             .create();
-
 
     public ServerFacade(int port) {
         this.port = port;
@@ -112,7 +111,15 @@ public class ServerFacade {
 
     public String listGames(String authToken) throws Exception {
         var response = get("game", authToken);
-        return response.body();
+        var mapped = DESERIALIZER.fromJson(response.body(), Map.class);
+        String output = "Current games:";
+        var listOfGames = (ArrayList<LinkedTreeMap>) mapped.get("games");
+        listOfGames.sort(Comparator.comparing(map -> (Integer) map.get("gameID")));
+        for (var game : listOfGames) {
+            output += "\nGame number " + game.get("gameID") + ": " + game.get("gameName");
+            output += "W: " + game.get("whiteUsername") + " B: " + game.get("blackUsername");
+        }
+        return output;
     }
 
     public void joinGame(String authToken, Long gameID, ChessGame.TeamColor playerColor) throws Exception {
