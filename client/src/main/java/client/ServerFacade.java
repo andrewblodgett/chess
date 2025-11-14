@@ -103,7 +103,6 @@ public class ServerFacade {
 
     public Long createGame(String authToken, String gameName) throws Exception {
         var response = post("game", authToken, String.format("{ \"gameName\":\"%s\" }", gameName));
-        System.out.println(response.body());
         var mapped = DESERIALIZER.fromJson(response.body(), Map.class);
         return (Long) mapped.get("gameID");
 
