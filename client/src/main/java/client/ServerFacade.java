@@ -116,7 +116,7 @@ public class ServerFacade {
         listOfGames.sort(Comparator.comparing(map -> (Integer) map.get("gameID")));
         for (var game : listOfGames) {
             output += "\nGame number " + game.get("gameID") + ": " + game.get("gameName");
-            output += "W: " + game.get("whiteUsername") + " B: " + game.get("blackUsername");
+            output += "  W: " + game.get("whiteUsername") + " B: " + game.get("blackUsername");
         }
         return output;
     }
