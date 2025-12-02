@@ -1,5 +1,6 @@
 package websocket.commands;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -8,7 +9,7 @@ import java.util.Objects;
  * Note: You can add to this class, but you should not alter the existing
  * methods.
  */
-public class UserGameCommand {
+public class UserGameCommand implements Serializable {
 
     private final CommandType commandType;
 
