@@ -1,9 +1,7 @@
 package server.websocket;
 
-import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
-import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import io.javalin.websocket.*;
 import org.jetbrains.annotations.NotNull;
@@ -42,9 +40,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             Map positions = new Gson().fromJson(map.get("move").toString(), Map.class);
             Map<String, Double> start = new Gson().fromJson(positions.get("startPosition").toString(), Map.class);
             Map<String, Double> end = new Gson().fromJson(positions.get("endPosition").toString(), Map.class);
-            move = new ChessMove(new ChessPosition((int) Math.round(start.get("row")), (int) Math.round(start.get("col"))), new ChessPosition((int) Math.round(end.get("row")), (int) Math.round(end.get("col"))), null);
+            move = new ChessMove(new ChessPosition((int) Math.round(start.get("row")), (int) Math.round(start.get("col"))),
+                    new ChessPosition((int) Math.round(end.get("row")), (int) Math.round(end.get("col"))), null);
         }
-        command = new UserGameCommand(commandType, map.get("authToken").toString(), (int) Math.round(Double.parseDouble(map.get("gameID").toString())), move);
+        command = new UserGameCommand(commandType, map.get("authToken").toString(),
+                (int) Math.round(Double.parseDouble(map.get("gameID").toString())), move);
         return command;
     }
 
@@ -85,7 +85,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(WsMessageContext ctx, UserGameCommand command) throws IOException {
-        ctx.session.getRemote().sendString(new Gson().toJson(new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(command.getAuthToken(), command.getGameID()).game())));
+        ctx.session.getRemote().sendString(new Gson().toJson(new ServerMessage(
+                ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(command.getAuthToken(), command.getGameID()).game())));
         if (!connections.containsKey(command.getGameID())) {
             connections.put(command.getGameID(), new ConnectionManager());
         }

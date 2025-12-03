@@ -104,7 +104,8 @@ public class GameService {
         if (game == null) {
             throw new RuntimeException("Not a valid game ID");
         }
-        if ((game.whiteUsername().equals(auth.username()) && game.game().isWhitesTurn()) || (game.blackUsername().equals(auth.username()) && !game.game().isWhitesTurn())) {
+        if ((game.whiteUsername().equals(auth.username()) && game.game().isWhitesTurn()) ||
+                (game.blackUsername().equals(auth.username()) && !game.game().isWhitesTurn())) {
             var moved = game.game();
             if (moved.isOver()) {
                 throw new Exception("This game has already finished, no more moves can be made");
