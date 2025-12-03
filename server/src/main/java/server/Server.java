@@ -13,6 +13,7 @@ import datamodel.JoinGameRequest;
 import datamodel.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
+import server.websocket.WebSocketHandler;
 import service.*;
 
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ public class Server {
     private final UserService userService = new UserService(dataAccess);
     private final GameService gameService = new GameService(dataAccess);
 
+    private final WebSocketHandler wsHandler = new WebSocketHandler();
+
     private final static String ERROR_RESPONSE = "{ \"message\": \"Error: bad request\" }";
 
     public Server() {
@@ -38,7 +41,11 @@ public class Server {
         server.post("game", this::createGame);
         server.put("game", this::joinGame);
         server.get("game", this::listGames);
-
+        server.ws("/ws", ws -> {
+            ws.onConnect(wsHandler);
+            ws.onMessage(wsHandler);
+            ws.onClose(wsHandler);
+        });
     }
 
     private void clear(Context ctx) {
