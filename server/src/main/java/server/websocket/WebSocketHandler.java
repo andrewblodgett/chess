@@ -33,7 +33,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             Map<String, Double> end = new Gson().fromJson(positions.get("end").toString(), Map.class);
             move = new ChessMove(new ChessPosition((int) Math.round(start.get("row")), (int) Math.round(start.get("col"))), new ChessPosition((int) Math.round(end.get("row")), (int) Math.round(end.get("col"))), null);
         }
-        command = new UserGameCommand(commandType, map.get("authToken").toString(), Integer.parseInt(map.get("gameID").toString()), move);
+        command = new UserGameCommand(commandType, map.get("authToken").toString(), (int) Math.round(Double.parseDouble(map.get("gameID").toString())), move);
         return command;
     }
 
@@ -51,7 +51,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     @Override
     public void handleMessage(@NotNull WsMessageContext ctx) throws Exception {
         try {
-            deserializeCommand(ctx.message());
+            var command = deserializeCommand(ctx.message());
+            if (command.getCommandType().equals(CONNECT)) {
+                connections.add(ctx.session);
+                connections.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, "gamers"));
+            }
         } catch (Exception e) {
             connections.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.ERROR));
             System.out.println("Incorrect Format");

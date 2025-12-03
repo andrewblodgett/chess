@@ -11,6 +11,7 @@ import java.util.Objects;
  */
 public class ServerMessage implements Serializable {
     ServerMessageType serverMessageType;
+    String game;
 
     public enum ServerMessageType {
         LOAD_GAME,
@@ -20,6 +21,11 @@ public class ServerMessage implements Serializable {
 
     public ServerMessage(ServerMessageType type) {
         this.serverMessageType = type;
+    }
+
+    public ServerMessage(ServerMessageType type, String game) {
+        this.serverMessageType = type;
+        this.game = game;
     }
 
     public ServerMessageType getServerMessageType() {
