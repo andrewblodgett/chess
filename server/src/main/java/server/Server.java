@@ -27,8 +27,7 @@ public class Server {
     private final DataAccess dataAccess = new MySQLDataAccess();
     private final UserService userService = new UserService(dataAccess);
     private final GameService gameService = new GameService(dataAccess);
-
-    private final WebSocketHandler wsHandler = new WebSocketHandler();
+    private final WebSocketHandler wsHandler = new WebSocketHandler(gameService);
 
     private final static String ERROR_RESPONSE = "{ \"message\": \"Error: bad request\" }";
 

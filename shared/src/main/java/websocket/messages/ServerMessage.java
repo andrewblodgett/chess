@@ -1,5 +1,8 @@
 package websocket.messages;
 
+import chess.ChessGame;
+import chess.ChessMove;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -11,7 +14,8 @@ import java.util.Objects;
  */
 public class ServerMessage implements Serializable {
     ServerMessageType serverMessageType;
-    String game;
+    ChessGame game;
+    String message;
 
     public enum ServerMessageType {
         LOAD_GAME,
@@ -23,7 +27,12 @@ public class ServerMessage implements Serializable {
         this.serverMessageType = type;
     }
 
-    public ServerMessage(ServerMessageType type, String game) {
+    public ServerMessage(ServerMessageType type, String message) {
+        this.serverMessageType = type;
+        this.message = message;
+    }
+
+    public ServerMessage(ServerMessageType type, ChessGame game) {
         this.serverMessageType = type;
         this.game = game;
     }

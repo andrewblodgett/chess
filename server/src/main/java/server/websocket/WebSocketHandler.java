@@ -1,19 +1,28 @@
 package server.websocket;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 import com.google.gson.Gson;
 import io.javalin.websocket.*;
 import org.jetbrains.annotations.NotNull;
+import service.GameService;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorServerMessage;
 import websocket.messages.ServerMessage;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static websocket.commands.UserGameCommand.CommandType.*;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
     private final ConnectionManager connections = new ConnectionManager();
+    private final GameService gameService;
+
+    public WebSocketHandler(GameService gs) {
+        gameService = gs;
+    }
 
     private UserGameCommand deserializeCommand(String message) {
         UserGameCommand command = null;
@@ -53,13 +62,19 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             var command = deserializeCommand(ctx.message());
             if (command.getCommandType().equals(CONNECT)) {
-                connections.add(ctx.session);
-                connections.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, "gamers"));
+                connect(ctx, command);
+
             }
         } catch (Exception e) {
-            connections.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.ERROR));
+            ctx.session.getRemote().sendString(new Gson().toJson(new ErrorServerMessage(e.toString())));
             System.out.println("Incorrect Format");
             throw new RuntimeException(e);
         }
+    }
+
+    private void connect(WsMessageContext ctx, UserGameCommand command) throws IOException {
+        ctx.session.getRemote().sendString(new Gson().toJson(new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(command.getAuthToken(), command.getGameID()).game())));
+        connections.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "gamers"));
+        connections.add(ctx.session);
     }
 }

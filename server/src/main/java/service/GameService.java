@@ -61,4 +61,16 @@ public class GameService {
         }
         return dataAccess.listGames();
     }
+
+    public GameData getGame(String authToken, int gameID) {
+        var auth = dataAccess.getAuth(authToken);
+        if (auth == null) {
+            throw new UnauthorizedException("Not a recognized auth token");
+        }
+        var game = dataAccess.getGame(gameID);
+        if (game == null) {
+            throw new RuntimeException("Not a valid game ID");
+        }
+        return game;
+    }
 }
