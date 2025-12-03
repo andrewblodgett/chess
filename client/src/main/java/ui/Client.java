@@ -47,13 +47,20 @@ public class Client {
             var scanner = new Scanner(System.in);
             String line = scanner.nextLine();
             var arguments = line.strip().split(" ");
-            if (!parseCommand(arguments)) {
-                break;
+            if (state == State.IN_GAME) {
+                if (!parseInGameCommand(arguments)) {
+                    break;
+                }
+            } else {
+                if (!parseBasicCommand(arguments)) {
+                    break;
+                }
             }
+
         }
     }
 
-    private boolean parseCommand(String[] command) {
+    private boolean parseBasicCommand(String[] command) {
         switch (command[0].toLowerCase()) {
             case "register":
                 try {
@@ -129,6 +136,28 @@ public class Client {
         return true;
     }
 
+    private boolean parseInGameCommand(String[] command) {
+        switch (command[0].toLowerCase()) {
+            case "help":
+                displayHelp();
+                break;
+            case "redraw":
+                break;
+            case "leave":
+                break;
+            case "move":
+                break;
+            case "resign":
+                break;
+            case "highlight":
+                break;
+            default:
+                System.out.println("You may have a typo in your command. type help to see a list of all commands.");
+
+        }
+        return true;
+    }
+
     private void displayHelp() {
         switch (state) {
             case LOGGED_OUT:
@@ -143,13 +172,22 @@ public class Client {
                 System.out.println("""
                         create <NAME> - to create a game
                         list - games
-                        join <ID> [WHITE|BLACK} - a game
+                        join <ID> [WHITE|BLACK] - a game
                         observe <ID> - a game
                         logout - when you are done
                         quit - playing chess
                         help - with possible commands
                         """);
                 break;
+            case IN_GAME:
+                System.out.println("""
+                        redraw - draw the most updated board
+                        highlight <PIECE>- all legal moves
+                        leave - the game
+                        move <START> <END> - make a move on your turn
+                        resign - admit defeat
+                        help - with possible commands
+                        """);
         }
 
     }

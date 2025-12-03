@@ -116,7 +116,7 @@ public class HTTPCommunicator {
         var mapped = DESERIALIZER.fromJson(response.body(), Map.class);
         String output = "Current games:";
         var listOfGames = (ArrayList<LinkedTreeMap>) mapped.get("games");
-        listOfGames.sort(Comparator.comparing(map -> (Integer) map.get("gameID")));
+        listOfGames.sort(Comparator.comparing(map -> ((Number) map.get("gameID")).intValue()));
         for (var game : listOfGames) {
             output += "\nGame number " + game.get("gameID") + ": " + game.get("gameName");
             output += "  W: " + game.get("whiteUsername") + " B: " + game.get("blackUsername");
