@@ -18,7 +18,7 @@ public class WebSocketCommunicator extends Endpoint {
 
     static void main(String[] args) {
         try {
-            var wsc = new WebSocketCommunicator(8080);
+            var wsc = new WebSocketCommunicator(8090);
             while (true) {
                 wsc.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, "asdas", 1));
 
@@ -29,7 +29,7 @@ public class WebSocketCommunicator extends Endpoint {
     }
 
     public WebSocketCommunicator(int port) throws Exception {
-        URI uri = new URI("ws://localhost:8080/ws");
+        URI uri = new URI("ws://localhost:" + port + "/ws");
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         session = container.connectToServer(this, uri);
 

@@ -34,7 +34,7 @@ public class WebsocketServer {
                     });
                     ws.onClose(_ -> System.out.println("Websocket closed"));
                 })
-                .start(8080);
+                .start(8090);
     }
 
 }

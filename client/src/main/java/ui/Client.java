@@ -1,10 +1,11 @@
+package ui;
+
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import client.ServerFacade;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
