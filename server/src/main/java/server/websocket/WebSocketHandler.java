@@ -14,11 +14,12 @@ import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static websocket.commands.UserGameCommand.CommandType.*;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
-    private final ConnectionManager connections = new ConnectionManager();
+    private final ConcurrentHashMap<Integer, ConnectionManager> connections = new ConcurrentHashMap<>();
     private final GameService gameService;
 
     public WebSocketHandler(GameService gs) {
@@ -85,25 +86,34 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void connect(WsMessageContext ctx, UserGameCommand command) throws IOException {
         ctx.session.getRemote().sendString(new Gson().toJson(new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(command.getAuthToken(), command.getGameID()).game())));
-        connections.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "gamers"));
-        connections.add(ctx.session);
+        if (!connections.containsKey(command.getGameID())) {
+            connections.put(command.getGameID(), new ConnectionManager());
+        }
+        var currentConnection = connections.get(command.getGameID());
+        currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "gamers"));
+        currentConnection.add(ctx.session);
     }
 
     private void makeMove(WsMessageContext ctx, UserGameCommand command) throws Exception {
         var game = gameService.makeMove(command.getAuthToken(), command.getGameID(), command.getMove());
 
-        connections.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game()));
-        connections.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "they moved"));
+        var currentConnection = connections.get(command.getGameID());
+        currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game()));
+        currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "they moved"));
     }
 
     private void resign(WsMessageContext ctx, UserGameCommand command) throws Exception {
         gameService.resign(command.getAuthToken(), command.getGameID());
-        connections.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "player resigned"));
+        var currentConnection = connections.get(command.getGameID());
+
+        currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "player resigned"));
     }
 
     private void leave(WsMessageContext ctx, UserGameCommand command) throws Exception {
         gameService.leaveGame(command.getAuthToken(), command.getGameID());
-        connections.remove(ctx.session);
-        connections.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "player left the game"));
+        var currentConnection = connections.get(command.getGameID());
+
+        currentConnection.remove(ctx.session);
+        currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "player left the game"));
     }
 }
