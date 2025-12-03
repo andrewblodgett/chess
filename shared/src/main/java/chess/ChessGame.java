@@ -26,6 +26,9 @@ public class ChessGame implements Serializable {
         history = new ArrayList<ChessBoard>();
     }
 
+    public boolean isWhitesTurn() {
+        return isWhitesTurn;
+    }
 
     /**
      * @return Which team's turn it is

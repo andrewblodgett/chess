@@ -3,6 +3,7 @@ package server.websocket;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import io.javalin.websocket.*;
 import org.jetbrains.annotations.NotNull;
@@ -38,8 +39,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         } else if (map.get("commandType").equals("MAKE_MOVE")) {
             commandType = MAKE_MOVE;
             Map positions = new Gson().fromJson(map.get("move").toString(), Map.class);
-            Map<String, Double> start = new Gson().fromJson(positions.get("start").toString(), Map.class);
-            Map<String, Double> end = new Gson().fromJson(positions.get("end").toString(), Map.class);
+            Map<String, Double> start = new Gson().fromJson(positions.get("startPosition").toString(), Map.class);
+            Map<String, Double> end = new Gson().fromJson(positions.get("endPosition").toString(), Map.class);
             move = new ChessMove(new ChessPosition((int) Math.round(start.get("row")), (int) Math.round(start.get("col"))), new ChessPosition((int) Math.round(end.get("row")), (int) Math.round(end.get("col"))), null);
         }
         command = new UserGameCommand(commandType, map.get("authToken").toString(), (int) Math.round(Double.parseDouble(map.get("gameID").toString())), move);
@@ -61,9 +62,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     public void handleMessage(@NotNull WsMessageContext ctx) throws Exception {
         try {
             var command = deserializeCommand(ctx.message());
-            if (command.getCommandType().equals(CONNECT)) {
-                connect(ctx, command);
-
+            switch (command.getCommandType()) {
+                case CONNECT:
+                    connect(ctx, command);
+                    break;
+                case MAKE_MOVE:
+                    makeMove(ctx, command);
+                    break;
             }
         } catch (Exception e) {
             ctx.session.getRemote().sendString(new Gson().toJson(new ErrorServerMessage(e.toString())));
@@ -76,5 +81,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         ctx.session.getRemote().sendString(new Gson().toJson(new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameService.getGame(command.getAuthToken(), command.getGameID()).game())));
         connections.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "gamers"));
         connections.add(ctx.session);
+    }
+
+    private void makeMove(WsMessageContext ctx, UserGameCommand command) throws Exception {
+        var game = gameService.makeMove(command.getAuthToken(), command.getGameID(), command.getMove());
+
+        connections.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game()));
+        connections.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "they moved"));
     }
 }

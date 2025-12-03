@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import dataaccess.DataAccess;
 import datamodel.GameData;
 
@@ -72,5 +73,26 @@ public class GameService {
             throw new RuntimeException("Not a valid game ID");
         }
         return game;
+    }
+
+    public GameData makeMove(String authToken, int gameID, ChessMove move) throws Exception {
+        var auth = dataAccess.getAuth(authToken);
+        if (auth == null) {
+            throw new UnauthorizedException("Not a recognized auth token");
+        }
+        var game = dataAccess.getGame(gameID);
+        if (game == null) {
+            throw new RuntimeException("Not a valid game ID");
+        }
+        if ((game.whiteUsername().equals(auth.username()) && game.game().isWhitesTurn()) || (game.blackUsername().equals(auth.username()) && !game.game().isWhitesTurn())) {
+            var moved = game.game();
+            moved.makeMove(move);
+            var updatedGame = new GameData(gameID, game.whiteUsername(), game.blackUsername(), game.gameName(), moved);
+            dataAccess.updateGame(updatedGame);
+            return updatedGame;
+        } else {
+            throw new Exception("You can't move the opponents pieces");
+        }
+
     }
 }
