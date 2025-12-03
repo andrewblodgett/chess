@@ -18,6 +18,8 @@ public class ChessGame implements Serializable {
     private boolean isWhitesTurn;
     private ChessBoard gameboard;
     private ArrayList<ChessBoard> history;
+    private TeamColor winner;
+    private boolean isOver;
 
     public ChessGame() {
         gameboard = new ChessBoard();
@@ -28,6 +30,15 @@ public class ChessGame implements Serializable {
 
     public boolean isWhitesTurn() {
         return isWhitesTurn;
+    }
+
+    public void resign(TeamColor resigningTeam) {
+        winner = otherTeam(resigningTeam);
+        isOver = true;
+    }
+
+    public boolean isOver() {
+        return isOver;
     }
 
     /**
@@ -369,7 +380,11 @@ public class ChessGame implements Serializable {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         if (isInCheck(teamColor)) {
-            return allValidMovesForTeam(teamColor).isEmpty();
+            if (allValidMovesForTeam(teamColor).isEmpty()) {
+                winner = otherTeam(teamColor);
+                isOver = true;
+                return true;
+            }
         }
         return false;
 
@@ -384,7 +399,10 @@ public class ChessGame implements Serializable {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         if (!isInCheck(teamColor)) {
-            return allValidMovesForTeam(teamColor).isEmpty();
+            if (allValidMovesForTeam(teamColor).isEmpty()) {
+                isOver = true;
+                return true;
+            }
         }
         return false;
     }

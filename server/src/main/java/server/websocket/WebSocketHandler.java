@@ -69,6 +69,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case MAKE_MOVE:
                     makeMove(ctx, command);
                     break;
+                case RESIGN:
+                    resign(ctx, command);
+                    break;
             }
         } catch (Exception e) {
             ctx.session.getRemote().sendString(new Gson().toJson(new ErrorServerMessage(e.toString())));
@@ -88,5 +91,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         connections.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game()));
         connections.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "they moved"));
+    }
+
+    private void resign(WsMessageContext ctx, UserGameCommand command) throws Exception {
+        gameService.resign(command.getAuthToken(), command.getGameID());
+        connections.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "player resigned"));
     }
 }

@@ -86,6 +86,9 @@ public class GameService {
         }
         if ((game.whiteUsername().equals(auth.username()) && game.game().isWhitesTurn()) || (game.blackUsername().equals(auth.username()) && !game.game().isWhitesTurn())) {
             var moved = game.game();
+            if (moved.isOver()) {
+                throw new Exception("This game has already finished, no more moves can be made");
+            }
             moved.makeMove(move);
             var updatedGame = new GameData(gameID, game.whiteUsername(), game.blackUsername(), game.gameName(), moved);
             dataAccess.updateGame(updatedGame);
@@ -94,5 +97,30 @@ public class GameService {
             throw new Exception("You can't move the opponents pieces");
         }
 
+    }
+
+
+    public void resign(String authToken, int gameID) throws Exception {
+        var auth = dataAccess.getAuth(authToken);
+        if (auth == null) {
+            throw new UnauthorizedException("Not a recognized auth token");
+        }
+        var gameData = dataAccess.getGame(gameID);
+        if (gameData == null) {
+            throw new RuntimeException("Not a valid game ID");
+        }
+        var game = gameData.game();
+        if (game.isOver()) {
+            throw new Exception("This game has already finished, you can't resign");
+        }
+        if (gameData.whiteUsername().equals(auth.username())) {
+            game.resign(ChessGame.TeamColor.WHITE);
+        } else if (gameData.blackUsername().equals(auth.username())) {
+            game.resign(ChessGame.TeamColor.BLACK);
+        } else {
+            throw new Exception("umm observers cant resign");
+        }
+        var updatedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+        dataAccess.updateGame(updatedGame);
     }
 }
