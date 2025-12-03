@@ -11,10 +11,14 @@ public class ServerFacade {
     WebSocketCommunicator webSocketCommunicator;
     int port;
 
-    public ServerFacade(int port) throws Exception {
+    public ServerFacade(int port) {
         this.port = port;
         httpCommunicator = new HTTPCommunicator(port);
-        webSocketCommunicator = new WebSocketCommunicator(8090);
+        try {
+            webSocketCommunicator = new WebSocketCommunicator(8090);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void clear() throws Exception {
