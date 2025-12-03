@@ -6,6 +6,7 @@ import dataaccess.DataAccess;
 import datamodel.GameData;
 
 import java.util.Collection;
+import java.util.Objects;
 
 public class GameService {
 
@@ -52,7 +53,26 @@ public class GameService {
             }
         }
         dataAccess.updateGame(new GameData(gameID, whiteUsername, blackUsername, game.gameName(), game.game()));
+    }
 
+    public void leaveGame(String authToken, int gameID) throws Exception {
+        var auth = dataAccess.getAuth(authToken);
+        if (auth == null) {
+            throw new UnauthorizedException("Not a recognized auth token");
+        }
+        var gameData = dataAccess.getGame(gameID);
+        if (gameData == null) {
+            throw new RuntimeException("Not a valid game ID");
+        }
+        var whiteUsername = gameData.whiteUsername();
+        var blackUsername = gameData.blackUsername();
+        if (Objects.equals(gameData.whiteUsername(), auth.username())) {
+            whiteUsername = null;
+        } else if (Objects.equals(gameData.blackUsername(), auth.username())) {
+            blackUsername = null;
+        }
+        var updatedGame = new GameData(gameID, whiteUsername, blackUsername, gameData.gameName(), gameData.game());
+        dataAccess.updateGame(updatedGame);
     }
 
     public Collection<GameData> listGames(String authToken) {
