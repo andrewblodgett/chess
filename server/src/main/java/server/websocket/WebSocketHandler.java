@@ -79,7 +79,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             }
         } catch (Exception e) {
             ctx.session.getRemote().sendString(new Gson().toJson(new ErrorServerMessage(e.toString())));
-            System.out.println("Incorrect Format");
+            System.out.println("Incorrect Format " + e.toString());
             throw new RuntimeException(e);
         }
     }
