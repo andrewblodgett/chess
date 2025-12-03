@@ -1,17 +1,20 @@
 package client;
 
 import chess.ChessGame;
+import websocket.commands.UserGameCommand;
 
 import java.util.*;
 
 public class ServerFacade {
 
     HTTPCommunicator httpCommunicator;
+    WebSocketCommunicator webSocketCommunicator;
     int port;
 
-    public ServerFacade(int port) {
+    public ServerFacade(int port) throws Exception {
         this.port = port;
         httpCommunicator = new HTTPCommunicator(port);
+        webSocketCommunicator = new WebSocketCommunicator(8090);
     }
 
     public void clear() throws Exception {
@@ -40,5 +43,6 @@ public class ServerFacade {
 
     public void joinGame(String authToken, Long gameID, ChessGame.TeamColor playerColor) throws Exception {
         httpCommunicator.joinGame(authToken, gameID, playerColor);
+        webSocketCommunicator.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, Math.toIntExact(gameID)));
     }
 }
