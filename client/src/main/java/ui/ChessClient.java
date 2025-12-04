@@ -256,7 +256,7 @@ public class ChessClient implements ServerMessageObserver {
         for (int r = 8; r > 0; r--) {
             String row = "";
             for (int j = 0; j < 7; j++) {
-                for (int c = 8; c > 0; c--) {
+                for (int c = 1; c <= 8; c++) {
                     var piece = board.getPiece(
                             new ChessPosition(isWhite ? r : (9 - r),
                                     isWhite ? c : (9 - c)));
@@ -265,7 +265,7 @@ public class ChessClient implements ServerMessageObserver {
                     } else {
                         row += SET_TEXT_COLOR_RED;
                     }
-                    if ((r + c) % 2 == 0) {
+                    if ((r + c + 1) % 2 == 0) {
                         row += SET_BG_COLOR_WHITE;
                         row += SET_TEXT_COLOR_BLACK;
                     } else {
@@ -274,7 +274,7 @@ public class ChessClient implements ServerMessageObserver {
 
                     }
                     if (j == 0) {
-                        row += isWhite ? coordMap.get(9 - c) : coordMap.get(c);
+                        row += !isWhite ? coordMap.get(9 - c) : coordMap.get(c);
                         row += !isWhite ? (9 - r) : r;
                     } else {
                         row += " ";
