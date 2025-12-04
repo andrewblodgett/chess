@@ -5,6 +5,8 @@ import client.ServerFacade;
 import client.ServerMessageObserver;
 import websocket.messages.ServerMessage;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -85,7 +87,7 @@ public class ChessClient implements ServerMessageObserver {
                 break;
             case LOAD_GAME:
                 currentGame = msg.getGame();
-                displayBoard(msg.getGame().getBoard(), color != null ? color : ChessGame.TeamColor.WHITE);
+                displayBoard(msg.getGame().getBoard(), color != null ? color : ChessGame.TeamColor.WHITE, new HashSet<>());
                 break;
         }
     }
@@ -150,6 +152,7 @@ public class ChessClient implements ServerMessageObserver {
                 try {
                     gameID = Integer.parseInt(command[1]);
                     facade.observeGame(authToken, gameID);
+                    state = State.OBSERVING;
                 } catch (Exception e) {
                     System.out.println(("Unable to observe game. Verify that you have the proper game ID"));
                 }
@@ -174,7 +177,7 @@ public class ChessClient implements ServerMessageObserver {
                 displayHelp();
                 break;
             case "redraw":
-                displayBoard(currentGame.getBoard(), color);
+                displayBoard(currentGame.getBoard(), color, new HashSet<>());
                 break;
             case "leave":
                 try {
@@ -195,6 +198,12 @@ public class ChessClient implements ServerMessageObserver {
             case "resign":
                 break;
             case "highlight":
+                try {
+                    displayBoard(currentGame.getBoard(), color, getSquaresToHighlight(parseChessCoordinate(command[1])));
+                } catch (Exception e) {
+                    System.out.println(e);
+                    throw new RuntimeException(e);
+                }
                 break;
             default:
                 System.out.println("You may have a typo in your command. type help to see a list of all commands.");
@@ -209,7 +218,7 @@ public class ChessClient implements ServerMessageObserver {
                 displayHelp();
                 break;
             case "redraw":
-                displayBoard(currentGame.getBoard(), color);
+                displayBoard(currentGame.getBoard(), color, new HashSet<>());
                 break;
             case "leave":
                 try {
@@ -220,6 +229,12 @@ public class ChessClient implements ServerMessageObserver {
                 }
                 break;
             case "highlight":
+                try {
+                    displayBoard(currentGame.getBoard(), color, getSquaresToHighlight(parseChessCoordinate(command[1])));
+                } catch (Exception e) {
+                    System.out.println(e);
+                    throw new RuntimeException(e);
+                }
                 break;
             default:
                 System.out.println("You may have a typo in your command. type help to see a list of all commands.");
@@ -289,7 +304,16 @@ public class ChessClient implements ServerMessageObserver {
 
     }
 
-    private void displayBoard(ChessBoard board, ChessGame.TeamColor teamColor) {
+    private Collection<ChessPosition> getSquaresToHighlight(ChessPosition start) {
+        var squares = new HashSet<ChessPosition>();
+        squares.add(start);
+        for (var move : currentGame.validMoves(start)) {
+            squares.add(move.getEndPosition());
+        }
+        return squares;
+    }
+
+    private void displayBoard(ChessBoard board, ChessGame.TeamColor teamColor, Collection<ChessPosition> highlights) {
         var emptySquareString = new String[]{"                      ", "                       ", "                       ",
                 "                       ", "                       ", "                       ",
                 "                       ", "                       "};
@@ -300,15 +324,13 @@ public class ChessClient implements ServerMessageObserver {
             String row = "";
             for (int j = 0; j < 7; j++) {
                 for (int c = 1; c <= 8; c++) {
-                    var piece = board.getPiece(
-                            new ChessPosition(isWhite ? r : (9 - r),
-                                    isWhite ? c : (9 - c)));
-                    if (piece != null && piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                        row += SET_TEXT_COLOR_BLUE;
-                    } else {
-                        row += SET_TEXT_COLOR_RED;
-                    }
-                    if ((r + c + 1) % 2 == 0) {
+                    var square = new ChessPosition(isWhite ? r : (9 - r),
+                            isWhite ? c : (9 - c));
+                    var piece = board.getPiece(square);
+                    if (highlights.contains(square)) {
+                        row += SET_BG_COLOR_MAGENTA;
+                        row += SET_TEXT_COLOR_DARK_GREY;
+                    } else if ((r + c + 1) % 2 == 0) {
                         row += SET_BG_COLOR_WHITE;
                         row += SET_TEXT_COLOR_BLACK;
                     } else {
