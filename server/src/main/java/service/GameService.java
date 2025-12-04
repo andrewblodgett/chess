@@ -2,6 +2,7 @@ package service;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import dataaccess.DataAccess;
 import datamodel.GameData;
 
@@ -16,6 +17,14 @@ public class GameService {
     public GameService(DataAccess dataAccess) {
         this.dataAccess = dataAccess;
         gameIDCounter = 1;
+    }
+
+    public String getUsername(String authToken) {
+        var auth = dataAccess.getAuth(authToken);
+        if (auth == null) {
+            throw new UnauthorizedException("Not a recognized auth token");
+        }
+        return auth.username();
     }
 
     public GameData createGame(String authToken, String gameName) {
@@ -55,7 +64,7 @@ public class GameService {
         dataAccess.updateGame(new GameData(gameID, whiteUsername, blackUsername, game.gameName(), game.game()));
     }
 
-    public void leaveGame(String authToken, int gameID) throws Exception {
+    public String leaveGame(String authToken, int gameID) throws Exception {
         var auth = dataAccess.getAuth(authToken);
         if (auth == null) {
             throw new UnauthorizedException("Not a recognized auth token");
@@ -64,6 +73,7 @@ public class GameService {
         if (gameData == null) {
             throw new RuntimeException("Not a valid game ID");
         }
+        String usernameOfTheQuitter = auth.username();
         var whiteUsername = gameData.whiteUsername();
         var blackUsername = gameData.blackUsername();
         if (Objects.equals(gameData.whiteUsername(), auth.username())) {
@@ -73,6 +83,7 @@ public class GameService {
         }
         var updatedGame = new GameData(gameID, whiteUsername, blackUsername, gameData.gameName(), gameData.game());
         dataAccess.updateGame(updatedGame);
+        return usernameOfTheQuitter;
     }
 
     public Collection<GameData> listGames(String authToken) {

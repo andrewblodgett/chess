@@ -85,6 +85,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(WsMessageContext ctx, UserGameCommand command) throws IOException {
+        var username = gameService.getUsername(command.getAuthToken());
         var gameData = gameService.getGame(command.getAuthToken(), command.getGameID());
         ctx.session.getRemote().sendString(new Gson().toJson(new ServerMessage(
                 ServerMessage.ServerMessageType.LOAD_GAME, gameData.game())));
@@ -92,7 +93,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             connections.put(command.getGameID(), new ConnectionManager());
         }
         var currentConnection = connections.get(command.getGameID());
-        currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "A player/observer connected to the game. Game with " + gameData.whiteUsername() + " as white  and " + gameData.blackUsername() + " as black."));
+        currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, username + " connected to the game with " + gameData.whiteUsername() + " as white  and " + gameData.blackUsername() + " as black."));
         currentConnection.add(ctx.session);
     }
 
@@ -125,10 +126,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void leave(WsMessageContext ctx, UserGameCommand command) throws Exception {
-        gameService.leaveGame(command.getAuthToken(), command.getGameID());
+        var username = gameService.leaveGame(command.getAuthToken(), command.getGameID());
         var currentConnection = connections.get(command.getGameID());
 
         currentConnection.remove(ctx.session);
-        currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "your opponent left the game"));
+        currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, username + " has left the game"));
     }
 }
