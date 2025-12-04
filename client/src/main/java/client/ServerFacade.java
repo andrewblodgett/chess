@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import websocket.commands.UserGameCommand;
 
 import java.io.IOException;
@@ -68,5 +69,9 @@ public class ServerFacade {
 
     public void addObserver(ServerMessageObserver client) {
         webSocketCommunicator.addObserver(client);
+    }
+
+    public void makeMove(String authToken, int gameID, ChessMove move) throws IOException {
+        webSocketCommunicator.send(new UserGameCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move));
     }
 }

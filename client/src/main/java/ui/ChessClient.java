@@ -176,6 +176,12 @@ public class ChessClient implements ServerMessageObserver {
                 }
                 break;
             case "move":
+                try {
+                    var move = parseMove(command[1], command[2], "");
+                    facade.makeMove(authToken, gameID, move);
+                } catch (Exception e) {
+                    System.out.println("That move didn't work, either because it wasn't formatted correctly or it wasn't legal.");
+                }
                 break;
             case "resign":
                 break;
@@ -197,8 +203,8 @@ public class ChessClient implements ServerMessageObserver {
         if (coord.length() != 2) {
             throw new Exception("Invalid coordinate");
         }
-        int row = Character.getNumericValue(coord.toUpperCase().charAt(0)) - 9;
-        var col = Integer.parseInt(coord.substring(1, 2));
+        int col = Character.getNumericValue(coord.toUpperCase().charAt(0)) - 9;
+        var row = Integer.parseInt(coord.substring(1, 2));
         return new ChessPosition(row, col);
     }
 
@@ -230,9 +236,9 @@ public class ChessClient implements ServerMessageObserver {
             case IN_GAME:
                 System.out.println("""
                         redraw - draw the most updated board
-                        highlight <PIECE>- all legal moves
+                        highlight <PIECE> - all legal moves
                         leave - the game
-                        move <START> <END> - make a move on your turn
+                        move <START> <END> {PROMOTION TYPE (optional)} - make a move on your turn
                         resign - admit defeat
                         help - with possible commands
                         """);
@@ -246,14 +252,14 @@ public class ChessClient implements ServerMessageObserver {
                 "                       ", "                       "};
 
         String formattedBoard = SET_TEXT_BOLD + "\n";
-        boolean isBlack = teamColor.equals(ChessGame.TeamColor.BLACK);
+        boolean isWhite = teamColor.equals(ChessGame.TeamColor.WHITE);
         for (int r = 8; r > 0; r--) {
             String row = "";
             for (int j = 0; j < 7; j++) {
                 for (int c = 8; c > 0; c--) {
                     var piece = board.getPiece(
-                            new ChessPosition(isBlack ? r : (9 - r),
-                                    isBlack ? c : (9 - c)));
+                            new ChessPosition(isWhite ? r : (9 - r),
+                                    isWhite ? c : (9 - c)));
                     if (piece != null && piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
                         row += SET_TEXT_COLOR_BLUE;
                     } else {
@@ -268,8 +274,8 @@ public class ChessClient implements ServerMessageObserver {
 
                     }
                     if (j == 0) {
-                        row += isBlack ? (9 - r) : r;
-                        row += coordMap.get(9 - c);
+                        row += isWhite ? coordMap.get(9 - c) : coordMap.get(c);
+                        row += !isWhite ? (9 - r) : r;
                     } else {
                         row += " ";
                     }
