@@ -100,18 +100,18 @@ public class GameService {
         if (auth == null) {
             throw new UnauthorizedException("Not a recognized auth token");
         }
-        var game = dataAccess.getGame(gameID);
-        if (game == null) {
+        var gameData = dataAccess.getGame(gameID);
+        if (gameData == null) {
             throw new RuntimeException("Not a valid game ID");
         }
-        if ((game.whiteUsername().equals(auth.username()) && game.game().isWhitesTurn()) ||
-                (game.blackUsername().equals(auth.username()) && !game.game().isWhitesTurn())) {
-            var moved = game.game();
+        if ((Objects.equals(gameData.whiteUsername(), auth.username()) && gameData.game().isWhitesTurn()) ||
+                (Objects.equals(gameData.blackUsername(), auth.username()) && !gameData.game().isWhitesTurn())) {
+            var moved = gameData.game();
             if (moved.isOver()) {
                 throw new Exception("This game has already finished, no more moves can be made");
             }
             moved.makeMove(move);
-            var updatedGame = new GameData(gameID, game.whiteUsername(), game.blackUsername(), game.gameName(), moved);
+            var updatedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), moved);
             dataAccess.updateGame(updatedGame);
             return updatedGame;
         } else {

@@ -1,7 +1,6 @@
 package websocket.messages;
 
 import chess.ChessGame;
-import chess.ChessMove;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -42,7 +41,7 @@ public class ServerMessage implements Serializable {
     }
 
     public String getMessage() {
-        return message;
+        return this.message;
     }
 
     public ChessGame getGame() {

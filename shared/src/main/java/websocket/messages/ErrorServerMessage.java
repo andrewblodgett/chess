@@ -8,6 +8,7 @@ public class ErrorServerMessage extends ServerMessage {
         errorMessage = message;
     }
 
+    @Override
     public String getMessage() {
         return errorMessage;
     }

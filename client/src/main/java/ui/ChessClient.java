@@ -72,12 +72,16 @@ public class ChessClient implements ServerMessageObserver {
 
     public void notify(ServerMessage msg) {
         switch (msg.getServerMessageType()) {
-            case NOTIFICATION, ERROR:
+            case NOTIFICATION:
+                System.out.println(msg.getMessage());
+                break;
+            case ERROR:
                 System.out.println(msg.getMessage());
                 break;
             case LOAD_GAME:
                 currentGame = msg.getGame();
                 displayBoard(msg.getGame().getBoard(), color);
+                break;
         }
     }
 
