@@ -74,4 +74,8 @@ public class ServerFacade {
     public void makeMove(String authToken, int gameID, ChessMove move) throws IOException {
         webSocketCommunicator.send(new UserGameCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move));
     }
+
+    public void resign(String authToken, int gameID) throws IOException {
+        webSocketCommunicator.send(new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID));
+    }
 }

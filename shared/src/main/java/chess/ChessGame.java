@@ -32,6 +32,10 @@ public class ChessGame implements Serializable {
         return isWhitesTurn;
     }
 
+    public TeamColor getWinner() {
+        return winner;
+    }
+
     public void resign(TeamColor resigningTeam) {
         winner = otherTeam(resigningTeam);
         isOver = true;
@@ -179,7 +183,7 @@ public class ChessGame implements Serializable {
      * @param move chess move to perform
      * @throws InvalidMoveException if move is invalid
      */
-    public void makeMove(ChessMove move) throws InvalidMoveException {
+    public void makeMove(ChessMove move) throws Exception {
         try {
             var startingPiece = gameboard.getPiece(move.getStartPosition());
             if (((startingPiece.getTeamColor() == TeamColor.WHITE && isWhitesTurn)
@@ -198,7 +202,7 @@ public class ChessGame implements Serializable {
                 throw new InvalidMoveException(move.toString() + " is an invalid move.");
             }
         } catch (Exception e) {
-            throw new InvalidMoveException(move.toString() + " is an invalid move because " + e.toString());
+            throw new Exception(move.toString() + " is an invalid move because " + e.toString());
         }
     }
 

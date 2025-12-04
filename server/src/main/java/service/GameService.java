@@ -121,7 +121,7 @@ public class GameService {
     }
 
 
-    public void resign(String authToken, int gameID) throws Exception {
+    public GameData resign(String authToken, int gameID) throws Exception {
         var auth = dataAccess.getAuth(authToken);
         if (auth == null) {
             throw new UnauthorizedException("Not a recognized auth token");
@@ -143,5 +143,6 @@ public class GameService {
         }
         var updatedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
         dataAccess.updateGame(updatedGame);
+        return updatedGame;
     }
 }

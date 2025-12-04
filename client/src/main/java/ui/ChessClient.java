@@ -3,6 +3,7 @@ package ui;
 import chess.*;
 import client.ServerFacade;
 import client.ServerMessageObserver;
+import websocket.messages.ErrorServerMessage;
 import websocket.messages.ServerMessage;
 
 import java.util.Collection;
@@ -83,7 +84,7 @@ public class ChessClient implements ServerMessageObserver {
                 System.out.println(msg.getMessage());
                 break;
             case ERROR:
-                System.out.println(msg.getMessage());
+                System.out.println(msg.getErrorMessage());
                 break;
             case LOAD_GAME:
                 currentGame = msg.getGame();
@@ -196,6 +197,16 @@ public class ChessClient implements ServerMessageObserver {
                 }
                 break;
             case "resign":
+                try {
+                    System.out.println("type yes to confirm ");
+                    var confirm = new Scanner(System.in).nextLine();
+                    if (confirm.equals("yes")) {
+                        facade.resign(authToken, gameID);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
                 break;
             case "highlight", "h":
                 try {
@@ -306,10 +317,13 @@ public class ChessClient implements ServerMessageObserver {
 
     private Collection<ChessPosition> getSquaresToHighlight(ChessPosition start) {
         var squares = new HashSet<ChessPosition>();
-        squares.add(start);
-        for (var move : currentGame.validMoves(start)) {
-            squares.add(move.getEndPosition());
+        if (currentGame.getBoard().getPiece(start) != null) {
+            squares.add(start);
+            for (var move : currentGame.validMoves(start)) {
+                squares.add(move.getEndPosition());
+            }
         }
+
         return squares;
     }
 

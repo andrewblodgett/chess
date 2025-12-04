@@ -1,5 +1,6 @@
 package server.websocket;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 import com.google.gson.Gson;
@@ -79,8 +80,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             }
         } catch (Exception e) {
             ctx.session.getRemote().sendString(new Gson().toJson(new ErrorServerMessage(e.toString())));
-            System.out.println("Incorrect Format " + e.toString());
-            throw new RuntimeException(e);
+            System.out.println("Error: " + e.toString());
         }
     }
 
@@ -97,19 +97,31 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void makeMove(WsMessageContext ctx, UserGameCommand command) throws Exception {
-        var game = gameService.makeMove(command.getAuthToken(), command.getGameID(), command.getMove());
+        var gameData = gameService.makeMove(command.getAuthToken(), command.getGameID(), command.getMove());
         var currentConnection = connections.get(command.getGameID());
-        var username = game.game().isWhitesTurn() ? game.blackUsername() : game.whiteUsername();
+        var username = gameData.game().isWhitesTurn() ? gameData.blackUsername() : gameData.whiteUsername();
 
-        currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game.game()));
+        currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game()));
         currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, username + " moved a piece"));
+
+        if (gameData.game().isOver()) {
+            if (gameData.game().getWinner() == ChessGame.TeamColor.BLACK) {
+                currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "The game is over. " + gameData.blackUsername() + " is the winner!"));
+            } else if (gameData.game().getWinner() == ChessGame.TeamColor.BLACK) {
+                currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "The game is over. " + gameData.whiteUsername() + " is the winner!"));
+            } else {
+                currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "The game is over. The game ended in a stalemate. "));
+            }
+        }
     }
 
     private void resign(WsMessageContext ctx, UserGameCommand command) throws Exception {
-        gameService.resign(command.getAuthToken(), command.getGameID());
+        var gameData = gameService.resign(command.getAuthToken(), command.getGameID());
         var currentConnection = connections.get(command.getGameID());
+        var username = gameData.game().getWinner() == ChessGame.TeamColor.BLACK ? gameData.blackUsername() : gameData.whiteUsername();
 
-        currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "your opponent resigned resigned"));
+
+        currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, username + " resigned. "));
     }
 
     private void leave(WsMessageContext ctx, UserGameCommand command) throws Exception {

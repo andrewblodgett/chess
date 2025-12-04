@@ -16,6 +16,10 @@ public class ServerMessage implements Serializable {
     ChessGame game;
     String message;
 
+    public String getErrorMessage() {
+        return "There was an error with your request.";
+    }
+
     public enum ServerMessageType {
         LOAD_GAME,
         ERROR,
