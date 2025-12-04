@@ -94,7 +94,7 @@ public class ChessClient implements ServerMessageObserver {
 
     private boolean parseBasicCommand(String[] command) {
         switch (command[0].toLowerCase()) {
-            case "register":
+            case "register", "r":
                 try {
                     authToken = facade.register(command[1], command[2], command[3]);
                     state = State.LOGGED_IN;
@@ -119,24 +119,24 @@ public class ChessClient implements ServerMessageObserver {
                     System.out.println("Unable to login. Verify that your username and password are correct.");
                 }
                 break;
-            case "help":
+            case "help", "h":
                 displayHelp();
                 break;
-            case "quit":
+            case "quit", "q":
                 try {
                     facade.logout(authToken);
                 } catch (Exception e) {
 
                 }
                 return false;
-            case "list":
+            case "list", "l":
                 try {
                     System.out.println(facade.listGames(authToken));
                 } catch (Exception e) {
                     System.out.println("Unable to fetch games. Are you logged in?");
                 }
                 break;
-            case "join":
+            case "join", "j":
                 try {
                     var color = command[2].equalsIgnoreCase("white") ? ChessGame.TeamColor.WHITE :
                             ChessGame.TeamColor.BLACK;
@@ -148,7 +148,7 @@ public class ChessClient implements ServerMessageObserver {
                     System.out.println("Unable to join game. Verify that you have the proper game ID and player color");
                 }
                 break;
-            case "observe":
+            case "observe", "o":
                 try {
                     gameID = Integer.parseInt(command[1]);
                     facade.observeGame(authToken, gameID);
@@ -157,7 +157,7 @@ public class ChessClient implements ServerMessageObserver {
                     System.out.println(("Unable to observe game. Verify that you have the proper game ID"));
                 }
                 break;
-            case "create":
+            case "create", "c":
                 try {
                     facade.createGame(authToken, command[1]);
                 } catch (Exception e) {
@@ -176,10 +176,10 @@ public class ChessClient implements ServerMessageObserver {
             case "help":
                 displayHelp();
                 break;
-            case "redraw":
+            case "redraw", "r":
                 displayBoard(currentGame.getBoard(), color, new HashSet<>());
                 break;
-            case "leave":
+            case "leave", "l":
                 try {
                     facade.leaveGame(authToken, gameID);
                     state = State.LOGGED_IN;
@@ -187,7 +187,7 @@ public class ChessClient implements ServerMessageObserver {
                     System.out.println("For some reason that didn't work");
                 }
                 break;
-            case "move":
+            case "move", "m":
                 try {
                     var move = parseMove(command[1], command[2], "");
                     facade.makeMove(authToken, gameID, move);
@@ -197,7 +197,7 @@ public class ChessClient implements ServerMessageObserver {
                 break;
             case "resign":
                 break;
-            case "highlight":
+            case "highlight", "h":
                 try {
                     displayBoard(currentGame.getBoard(), color, getSquaresToHighlight(parseChessCoordinate(command[1])));
                 } catch (Exception e) {
@@ -217,10 +217,10 @@ public class ChessClient implements ServerMessageObserver {
             case "help":
                 displayHelp();
                 break;
-            case "redraw":
+            case "redraw", "r":
                 displayBoard(currentGame.getBoard(), color, new HashSet<>());
                 break;
-            case "leave":
+            case "leave", "l":
                 try {
                     facade.leaveGame(authToken, gameID);
                     state = State.LOGGED_IN;
@@ -228,9 +228,9 @@ public class ChessClient implements ServerMessageObserver {
                     System.out.println("For some reason that didn't work");
                 }
                 break;
-            case "highlight":
+            case "highlight", "h":
                 try {
-                    displayBoard(currentGame.getBoard(), color, getSquaresToHighlight(parseChessCoordinate(command[1])));
+                    displayBoard(currentGame.getBoard(), ChessGame.TeamColor.WHITE, getSquaresToHighlight(parseChessCoordinate(command[1])));
                 } catch (Exception e) {
                     System.out.println(e);
                     throw new RuntimeException(e);
@@ -328,7 +328,7 @@ public class ChessClient implements ServerMessageObserver {
                             isWhite ? c : (9 - c));
                     var piece = board.getPiece(square);
                     if (highlights.contains(square)) {
-                        row += SET_BG_COLOR_MAGENTA;
+                        row += SET_BG_HIGHLIGHT_COLOR;
                         row += SET_TEXT_COLOR_DARK_GREY;
                     } else if ((r + c + 1) % 2 == 0) {
                         row += SET_BG_COLOR_WHITE;
@@ -345,7 +345,8 @@ public class ChessClient implements ServerMessageObserver {
                         row += " ";
                     }
                     if (piece != null && piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                        row += SET_TEXT_COLOR_BLUE;
+//                        row += SET_TEXT_COLOR_BLUE;
+                        row += SET_TEXT_COLOR_NICE_GREEN;
                     } else {
                         row += SET_TEXT_COLOR_RED;
                     }
