@@ -16,7 +16,7 @@ public class GameService {
 
     public GameService(DataAccess dataAccess) {
         this.dataAccess = dataAccess;
-        gameIDCounter = 1;
+        gameIDCounter = 0;
     }
 
     public String getUsername(String authToken) {
@@ -32,7 +32,8 @@ public class GameService {
         if (auth == null) {
             throw new UnauthorizedException("Not a recognized auth token");
         }
-        var newGame = new GameData(gameIDCounter++, null, null, gameName, new ChessGame());
+        gameIDCounter++;
+        var newGame = new GameData(gameIDCounter, null, null, gameName, new ChessGame());
         dataAccess.createGame(newGame);
         return newGame;
     }
@@ -122,6 +123,8 @@ public class GameService {
                 throw new Exception("This game has already finished, no more moves can be made");
             }
             moved.makeMove(move);
+            moved.isInCheckmate(ChessGame.TeamColor.WHITE);
+            moved.isInCheckmate(ChessGame.TeamColor.BLACK);
             var updatedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), moved);
             dataAccess.updateGame(updatedGame);
             return updatedGame;

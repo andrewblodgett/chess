@@ -107,11 +107,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         if (gameData.game().isOver()) {
             if (gameData.game().getWinner() == ChessGame.TeamColor.BLACK) {
-                currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "The game is over. " + gameData.blackUsername() + " is the winner!"));
-            } else if (gameData.game().getWinner() == ChessGame.TeamColor.BLACK) {
-                currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "The game is over. " + gameData.whiteUsername() + " is the winner!"));
+                currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "The game is over. " + gameData.blackUsername() + " is the winner!"));
+            } else if (gameData.game().getWinner() == ChessGame.TeamColor.WHITE) {
+                currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "The game is over. " + gameData.whiteUsername() + " is the winner!"));
             } else {
-                currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "The game is over. The game ended in a stalemate. "));
+                currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "The game is over. The game ended in a stalemate. "));
             }
         }
     }

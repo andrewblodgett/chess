@@ -198,6 +198,13 @@ public class ChessGame implements Serializable {
                 }
                 gameboard.movePiece(move);
                 isWhitesTurn = !isWhitesTurn;
+                if (isInCheckmate(startingPiece.getTeamColor())) {
+                    isOver = true;
+                    winner = otherTeam(startingPiece.getTeamColor());
+                } else if (isInStalemate(startingPiece.getTeamColor())) {
+                    isOver = true;
+                    winner = null; // Draw
+                }
             } else {
                 throw new InvalidMoveException(move.toString() + " is an invalid move.");
             }
