@@ -104,10 +104,10 @@ public class HTTPCommunicator {
         delete("session", authToken);
     }
 
-    public Long createGame(String authToken, String gameName) throws Exception {
+    public int createGame(String authToken, String gameName) throws Exception {
         var response = post("game", authToken, String.format("{ \"gameName\":\"%s\" }", gameName));
         var mapped = DESERIALIZER.fromJson(response.body(), Map.class);
-        return (Long) mapped.get("gameID");
+        return Integer.parseInt(mapped.get("gameID").toString());
 
     }
 
@@ -124,7 +124,7 @@ public class HTTPCommunicator {
         return output;
     }
 
-    public void joinGame(String authToken, Long gameID, ChessGame.TeamColor playerColor) throws Exception {
+    public void joinGame(String authToken, int gameID, ChessGame.TeamColor playerColor) throws Exception {
         var response = put("game", authToken, String.format("{ \"playerColor\":\"%s\", \"gameID\":\"%d\"}",
                 playerColor == ChessGame.TeamColor.WHITE ? "WHITE" : "BLACK", gameID));
     }

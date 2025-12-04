@@ -2,7 +2,7 @@
 <project>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>server</artifactId>
+    <artifactId>chessServer</artifactId>
     <version>1.0.0</version>
 
     <parent>
@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <build>
-        <finalName>server</finalName>
+        <finalName>chessServer</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

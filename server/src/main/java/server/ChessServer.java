@@ -1,11 +1,8 @@
 package server;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.internal.LinkedTreeMap;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
-import dataaccess.MemoryDataAccess;
 import dataaccess.MySQLDataAccess;
 import datamodel.AuthData;
 import datamodel.GameData;
@@ -17,10 +14,8 @@ import server.websocket.WebSocketHandler;
 import service.*;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
-public class Server {
+public class ChessServer {
 
     private final Javalin server;
     //    private final DataAccess dataAccess = new MemoryDataAccess();
@@ -31,7 +26,7 @@ public class Server {
 
     private final static String ERROR_RESPONSE = "{ \"message\": \"Error: bad request\" }";
 
-    public Server() {
+    public ChessServer() {
         server = Javalin.create(config -> config.staticFiles.add("web"));
         server.delete("db", this::clear);
         server.post("user", this::register);

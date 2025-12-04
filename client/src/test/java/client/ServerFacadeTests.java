@@ -2,26 +2,26 @@ package client;
 
 import chess.ChessGame;
 import org.junit.jupiter.api.*;
-import server.Server;
+import server.ChessServer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerFacadeTests {
 
-    private static Server server;
+    private static ChessServer chessServer;
     private static ServerFacade facade;
 
     @BeforeAll
     public static void init() {
-        server = new Server();
-        var port = server.run(0);
+        chessServer = new ChessServer();
+        var port = chessServer.run(0);
         facade = new ServerFacade(port);
         System.out.println("Started test HTTP server on " + port);
     }
 
     @AfterAll
     static void stopServer() {
-        server.stop();
+        chessServer.stop();
     }
 
     @BeforeAll
@@ -137,7 +137,7 @@ public class ServerFacadeTests {
     public void joinGameInvalidIDTest() {
         assertThrows(Exception.class, () -> {
             var auth = facade.register("999", "5599", "9");
-            facade.joinGame(auth, 324324L, ChessGame.TeamColor.WHITE);
+            facade.joinGame(auth, 324324, ChessGame.TeamColor.WHITE);
         });
     }
 

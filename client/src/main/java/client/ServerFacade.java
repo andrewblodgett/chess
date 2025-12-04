@@ -3,6 +3,8 @@ package client;
 import chess.ChessGame;
 import websocket.commands.UserGameCommand;
 
+import java.io.IOException;
+
 public class ServerFacade {
 
     HTTPCommunicator httpCommunicator;
@@ -35,7 +37,7 @@ public class ServerFacade {
         httpCommunicator.logout(authToken);
     }
 
-    public Long createGame(String authToken, String gameName) throws Exception {
+    public int createGame(String authToken, String gameName) throws Exception {
         return httpCommunicator.createGame(authToken, gameName);
     }
 
@@ -43,13 +45,25 @@ public class ServerFacade {
         return httpCommunicator.listGames(authToken);
     }
 
-    public void joinGame(String authToken, Long gameID, ChessGame.TeamColor playerColor) throws Exception {
+    public void joinGame(String authToken, int gameID, ChessGame.TeamColor playerColor) throws Exception {
         httpCommunicator.joinGame(authToken, gameID, playerColor);
         try {
-            webSocketCommunicator.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, (int) Math.round(gameID)));
+            webSocketCommunicator.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID));
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    public void observeGame(String authToken, int gameID) {
+        try {
+            webSocketCommunicator.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID));
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public void leaveGame(String authToken, int gameID) throws IOException {
+        webSocketCommunicator.send(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID));
     }
 
     public void addObserver(ServerMessageObserver client) {

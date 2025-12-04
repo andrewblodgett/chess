@@ -18,7 +18,9 @@ public class ChessClient implements ServerMessageObserver {
     private final ServerFacade facade;
     private String authToken;
     private State state;
-
+    private ChessGame currentGame;
+    private ChessGame.TeamColor color;
+    private int gameID;
 
     enum State {
         LOGGED_OUT("Logged out"),
@@ -26,7 +28,6 @@ public class ChessClient implements ServerMessageObserver {
         IN_GAME("In a game");
 
         private final String description;
-        private ChessGame.TeamColor color;
 
         State(String description) {
             this.description = description;
@@ -34,14 +35,6 @@ public class ChessClient implements ServerMessageObserver {
 
         public String toString() {
             return this.description;
-        }
-
-        public void setColor(ChessGame.TeamColor color) {
-            this.color = color;
-        }
-
-        public ChessGame.TeamColor getColor() {
-            return color;
         }
     }
 
@@ -78,7 +71,8 @@ public class ChessClient implements ServerMessageObserver {
                 System.out.println(msg.getMessage());
                 break;
             case LOAD_GAME:
-                displayBoard(msg.getGame().getBoard(), state.getColor());
+                currentGame = msg.getGame();
+                displayBoard(msg.getGame().getBoard(), color);
         }
     }
 
@@ -130,17 +124,21 @@ public class ChessClient implements ServerMessageObserver {
                 try {
                     var color = command[2].equalsIgnoreCase("white") ? ChessGame.TeamColor.WHITE :
                             ChessGame.TeamColor.BLACK;
-                    facade.joinGame(authToken, Long.parseLong(command[1]), color);
+                    gameID = Integer.parseInt(command[1]);
+                    facade.joinGame(authToken, gameID, color);
                     state = State.IN_GAME;
-                    state.setColor(color);
+                    this.color = color;
                 } catch (Exception e) {
                     System.out.println("Unable to join game. Verify that you have the proper game ID and player color");
                 }
                 break;
             case "observe":
-                var board = new ChessBoard();
-                board.resetBoard();
-                displayBoard(board, ChessGame.TeamColor.WHITE);
+                try {
+                    gameID = Integer.parseInt(command[1]);
+                    facade.observeGame(authToken, gameID);
+                } catch (Exception e) {
+                    System.out.println(("Unable to observe game. Verify that you have the proper game ID"));
+                }
                 break;
             case "create":
                 try {
@@ -162,8 +160,15 @@ public class ChessClient implements ServerMessageObserver {
                 displayHelp();
                 break;
             case "redraw":
+                displayBoard(currentGame.getBoard(), color);
                 break;
             case "leave":
+                try {
+                    facade.leaveGame(authToken, gameID);
+                    state = State.LOGGED_IN;
+                } catch (Exception e) {
+                    System.out.println("For some reason that didn't work");
+                }
                 break;
             case "move":
                 break;
@@ -223,7 +228,7 @@ public class ChessClient implements ServerMessageObserver {
                 6, "F",
                 7, "G",
                 8, "H");
-        String formattedBoard = SET_TEXT_BOLD;
+        String formattedBoard = SET_TEXT_BOLD + "\n";
         boolean isBlack = teamColor.equals(ChessGame.TeamColor.BLACK);
         for (int r = 8; r > 0; r--) {
             String row = "";
