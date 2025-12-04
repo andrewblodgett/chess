@@ -1,9 +1,6 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import client.ServerFacade;
 import client.ServerMessageObserver;
 import websocket.messages.ServerMessage;
@@ -21,6 +18,14 @@ public class ChessClient implements ServerMessageObserver {
     private ChessGame currentGame;
     private ChessGame.TeamColor color;
     private int gameID;
+
+    private final Map<Integer, String> coordMap = Map.of(1, "A", 2, "B",
+            3, "C",
+            4, "D",
+            5, "E",
+            6, "F",
+            7, "G",
+            8, "H");
 
     enum State {
         LOGGED_OUT("Logged out"),
@@ -183,6 +188,24 @@ public class ChessClient implements ServerMessageObserver {
         return true;
     }
 
+    private ChessMove parseMove(String start, String end, String promotion) throws Exception {
+        return new ChessMove(parseChessCoordinate(start), parseChessCoordinate(end), parsePromotionPiece(promotion));
+    }
+
+
+    private ChessPosition parseChessCoordinate(String coord) throws Exception {
+        if (coord.length() != 2) {
+            throw new Exception("Invalid coordinate");
+        }
+        int row = Character.getNumericValue(coord.toUpperCase().charAt(0)) - 9;
+        var col = Integer.parseInt(coord.substring(1, 2));
+        return new ChessPosition(row, col);
+    }
+
+    private ChessPiece.PieceType parsePromotionPiece(String promotion) {
+        return null; // TODO
+    }
+
     private void displayHelp() {
         switch (state) {
             case LOGGED_OUT:
@@ -221,13 +244,7 @@ public class ChessClient implements ServerMessageObserver {
         var emptySquareString = new String[]{"                      ", "                       ", "                       ",
                 "                       ", "                       ", "                       ",
                 "                       ", "                       "};
-        Map<Integer, String> coordMap = Map.of(1, "A", 2, "B",
-                3, "C",
-                4, "D",
-                5, "E",
-                6, "F",
-                7, "G",
-                8, "H");
+
         String formattedBoard = SET_TEXT_BOLD + "\n";
         boolean isBlack = teamColor.equals(ChessGame.TeamColor.BLACK);
         for (int r = 8; r > 0; r--) {
@@ -280,7 +297,7 @@ public class ChessClient implements ServerMessageObserver {
                 "                       ", "                       "};
         var pawnStrings = new String[]{
                 "                      ", "         (PP)          ", "         /  \\          ",
-                "      __/    \\__       ", "     {_        _}      ", "     __}      {__      ", "    {____________}     "
+                "      __/    \\__       ", "     (_        _)      ", "     __)      (__      ", "    (____________)     "
         };
         var bishopStrings = new String[]{
                 "        (BB)          ", "          )(           ", "         /  \\          ",
