@@ -30,7 +30,8 @@ public class ChessClient implements ServerMessageObserver {
     enum State {
         LOGGED_OUT("Logged out"),
         LOGGED_IN("Logged in"),
-        IN_GAME("In a game");
+        IN_GAME("In a game"),
+        OBSERVING("Watching a game");
 
         private final String description;
 
@@ -62,6 +63,10 @@ public class ChessClient implements ServerMessageObserver {
                 if (!parseInGameCommand(arguments)) {
                     break;
                 }
+            } else if (state == State.OBSERVING) {
+                if (!parseObserverCommand(arguments)) {
+                    break;
+                }
             } else {
                 if (!parseBasicCommand(arguments)) {
                     break;
@@ -80,7 +85,7 @@ public class ChessClient implements ServerMessageObserver {
                 break;
             case LOAD_GAME:
                 currentGame = msg.getGame();
-                displayBoard(msg.getGame().getBoard(), color);
+                displayBoard(msg.getGame().getBoard(), color != null ? color : ChessGame.TeamColor.WHITE);
                 break;
         }
     }
@@ -198,6 +203,31 @@ public class ChessClient implements ServerMessageObserver {
         return true;
     }
 
+    private boolean parseObserverCommand(String[] command) {
+        switch (command[0].toLowerCase()) {
+            case "help":
+                displayHelp();
+                break;
+            case "redraw":
+                displayBoard(currentGame.getBoard(), color);
+                break;
+            case "leave":
+                try {
+                    facade.leaveGame(authToken, gameID);
+                    state = State.LOGGED_IN;
+                } catch (Exception e) {
+                    System.out.println("For some reason that didn't work");
+                }
+                break;
+            case "highlight":
+                break;
+            default:
+                System.out.println("You may have a typo in your command. type help to see a list of all commands.");
+
+        }
+        return true;
+    }
+
     private ChessMove parseMove(String start, String end, String promotion) throws Exception {
         return new ChessMove(parseChessCoordinate(start), parseChessCoordinate(end), parsePromotionPiece(promotion));
     }
@@ -246,6 +276,15 @@ public class ChessClient implements ServerMessageObserver {
                         resign - admit defeat
                         help - with possible commands
                         """);
+                break;
+            case OBSERVING:
+                System.out.println("""
+                        redraw - draw the most updated board
+                        highlight <PIECE> - all legal moves
+                        leave - the game
+                        help - with possible commands
+                        """);
+                break;
         }
 
     }

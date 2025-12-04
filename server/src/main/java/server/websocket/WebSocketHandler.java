@@ -92,7 +92,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             connections.put(command.getGameID(), new ConnectionManager());
         }
         var currentConnection = connections.get(command.getGameID());
-        currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "A player connected to the game. Game with " + gameData.whiteUsername() + " as white  and " + gameData.blackUsername() + "as black."));
+        currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "A player/observer connected to the game. Game with " + gameData.whiteUsername() + " as white  and " + gameData.blackUsername() + " as black."));
         currentConnection.add(ctx.session);
     }
 
