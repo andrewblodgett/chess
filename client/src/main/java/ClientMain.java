@@ -1,9 +1,9 @@
-import ui.Client;
+import ui.ChessClient;
 
-public class Main {
+public class ClientMain {
     public static void main(String[] args) {
         try {
-            new Client().repl();
+            new ChessClient().repl();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

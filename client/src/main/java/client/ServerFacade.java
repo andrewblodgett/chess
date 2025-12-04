@@ -3,8 +3,6 @@ package client;
 import chess.ChessGame;
 import websocket.commands.UserGameCommand;
 
-import java.util.*;
-
 public class ServerFacade {
 
     HTTPCommunicator httpCommunicator;
@@ -52,5 +50,9 @@ public class ServerFacade {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    public void addObserver(ServerMessageObserver client) {
+        webSocketCommunicator.addObserver(client);
     }
 }

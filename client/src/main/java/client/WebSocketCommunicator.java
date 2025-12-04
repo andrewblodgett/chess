@@ -8,7 +8,6 @@ import jakarta.websocket.MessageHandler;
 import jakarta.websocket.Session;
 import jakarta.websocket.WebSocketContainer;
 import websocket.commands.UserGameCommand;
-import websocket.messages.ErrorServerMessage;
 import websocket.messages.ServerMessage;
 
 import java.io.*;
@@ -16,6 +15,7 @@ import java.net.URI;
 
 public class WebSocketCommunicator extends Endpoint {
     public Session session;
+    private ServerMessageObserver observer;
 
     public WebSocketCommunicator(String url) throws Exception {
         url = url.replace("http", "ws");
@@ -28,13 +28,7 @@ public class WebSocketCommunicator extends Endpoint {
             public void onMessage(String message) {
                 try {
                     ServerMessage msg = new Gson().fromJson(message, ServerMessage.class);
-                    switch (msg.getServerMessageType()) {
-                        case ERROR, NOTIFICATION:
-                            System.out.println(msg.getMessage());
-                            break;
-                        case LOAD_GAME:
-                            break;
-                    }
+                    observer.notify(msg);
                 } catch (Exception e) {
                     System.out.println(e);
                     throw new RuntimeException(e);
@@ -50,5 +44,9 @@ public class WebSocketCommunicator extends Endpoint {
 
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
+    }
+
+    public void addObserver(ServerMessageObserver observer) {
+        this.observer = observer;
     }
 }

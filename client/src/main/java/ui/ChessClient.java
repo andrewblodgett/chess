@@ -5,17 +5,20 @@ import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import client.ServerFacade;
+import client.ServerMessageObserver;
+import websocket.messages.ServerMessage;
 
 import java.util.Map;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class Client {
+public class ChessClient implements ServerMessageObserver {
 
     private final ServerFacade facade;
     private String authToken;
     private State state;
+
 
     enum State {
         LOGGED_OUT("Logged out"),
@@ -23,6 +26,7 @@ public class Client {
         IN_GAME("In a game");
 
         private final String description;
+        private ChessGame.TeamColor color;
 
         State(String description) {
             this.description = description;
@@ -31,10 +35,19 @@ public class Client {
         public String toString() {
             return this.description;
         }
+
+        public void setColor(ChessGame.TeamColor color) {
+            this.color = color;
+        }
+
+        public ChessGame.TeamColor getColor() {
+            return color;
+        }
     }
 
-    public Client() {
+    public ChessClient() {
         facade = new ServerFacade(8080);
+        facade.addObserver(this);
         authToken = "";
         state = State.LOGGED_OUT;
     }
@@ -56,7 +69,16 @@ public class Client {
                     break;
                 }
             }
+        }
+    }
 
+    public void notify(ServerMessage msg) {
+        switch (msg.getServerMessageType()) {
+            case NOTIFICATION, ERROR:
+                System.out.println(msg.getMessage());
+                break;
+            case LOAD_GAME:
+                displayBoard(msg.getGame().getBoard(), state.getColor());
         }
     }
 
@@ -106,13 +128,11 @@ public class Client {
                 break;
             case "join":
                 try {
-                    facade.joinGame(authToken, Long.parseLong(command[1]), command[2].equalsIgnoreCase("white") ? ChessGame.TeamColor.WHITE :
-                            ChessGame.TeamColor.BLACK);
-                    var board = new ChessBoard();
-                    board.resetBoard();
-                    displayBoard(board, command[2].equalsIgnoreCase("white") ? ChessGame.TeamColor.WHITE :
-                            ChessGame.TeamColor.BLACK);
+                    var color = command[2].equalsIgnoreCase("white") ? ChessGame.TeamColor.WHITE :
+                            ChessGame.TeamColor.BLACK;
+                    facade.joinGame(authToken, Long.parseLong(command[1]), color);
                     state = State.IN_GAME;
+                    state.setColor(color);
                 } catch (Exception e) {
                     System.out.println("Unable to join game. Verify that you have the proper game ID and player color");
                 }
