@@ -83,7 +83,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         var username = gameData.game().isWhitesTurn() ? gameData.blackUsername() : gameData.whiteUsername();
 
         currentConnection.broadcast(null, new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game()));
-        currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, username + " moved a piece"));
+        Map<Integer, String> coordMap = Map.of(1, "A", 2, "B",
+                3, "C",
+                4, "D",
+                5, "E",
+                6, "F",
+                7, "G",
+                8, "H");
+        var start = command.getMove().getStartPosition();
+        var end = command.getMove().getEndPosition();
+        String move = coordMap.get(start.getColumn()) + start.getRow() + " to " + coordMap.get(end.getColumn()) + end.getRow();
+        currentConnection.broadcast(ctx.session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, username + " moved a piece from " + move));
 
         if (gameData.game().isOver()) {
             if (gameData.game().getWinner() == ChessGame.TeamColor.BLACK) {
