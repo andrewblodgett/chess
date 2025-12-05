@@ -67,11 +67,14 @@ public class ChessPiece implements Serializable {
 
     private void kingAndKnightHelperUtil(ChessBoard board, ChessPosition pos, HashSet<ChessMove> validMoves, int row, int col, int[] p) {
         var newPos = new ChessPosition(row + p[0], col + p[1]);
-        if (board.getPiece(newPos) == null) {
-            validMoves.add(new ChessMove(pos, newPos, null));
-        } else if (canCapture(board.getPiece(newPos))) {
-            validMoves.add(new ChessMove(pos, newPos, null));
+        if (newPos.getRow() >= 1 && newPos.getRow() <= 8 && newPos.getColumn() >= 1 && newPos.getColumn() <= 8) {
+            if (board.getPiece(newPos) == null) {
+                validMoves.add(new ChessMove(pos, newPos, null));
+            } else if (canCapture(board.getPiece(newPos))) {
+                validMoves.add(new ChessMove(pos, newPos, null));
+            }
         }
+
     }
 
     private void moveUtility(ChessPosition pos, ChessBoard board, HashSet<ChessMove> validMoves, int rowIncrement, int colIncrement) {

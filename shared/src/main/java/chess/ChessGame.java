@@ -198,10 +198,10 @@ public class ChessGame implements Serializable {
                 }
                 gameboard.movePiece(move);
                 isWhitesTurn = !isWhitesTurn;
-                if (isInCheckmate(startingPiece.getTeamColor())) {
+                if (isInCheckmate(otherTeam(startingPiece.getTeamColor()))) {
                     isOver = true;
-                    winner = otherTeam(startingPiece.getTeamColor());
-                } else if (isInStalemate(startingPiece.getTeamColor())) {
+                    winner = startingPiece.getTeamColor();
+                } else if (isInStalemate(otherTeam(startingPiece.getTeamColor()))) {
                     isOver = true;
                     winner = null; // Draw
                 }
@@ -391,14 +391,9 @@ public class ChessGame implements Serializable {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         if (isInCheck(teamColor)) {
-            if (allValidMovesForTeam(teamColor).isEmpty()) {
-                winner = otherTeam(teamColor);
-                isOver = true;
-                return true;
-            }
+            return allValidMovesForTeam(teamColor).isEmpty();
         }
         return false;
-
     }
 
     /**
@@ -410,10 +405,7 @@ public class ChessGame implements Serializable {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         if (!isInCheck(teamColor)) {
-            if (allValidMovesForTeam(teamColor).isEmpty()) {
-                isOver = true;
-                return true;
-            }
+            return allValidMovesForTeam(teamColor).isEmpty();
         }
         return false;
     }
