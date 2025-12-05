@@ -89,6 +89,7 @@ public class ChessClient implements ServerMessageObserver {
             case LOAD_GAME:
                 currentGame = msg.getGame();
                 displayBoard(msg.getGame().getBoard(), color != null ? color : ChessGame.TeamColor.WHITE, new HashSet<>());
+                System.out.println(msg.getGame().toString());
                 break;
         }
     }
@@ -190,7 +191,7 @@ public class ChessClient implements ServerMessageObserver {
                 break;
             case "move", "m":
                 try {
-                    var move = parseMove(command[1], command[2], "");
+                    var move = parseMove(command[1], command[2], command.length > 3 ? command[3] : "");
                     facade.makeMove(authToken, gameID, move);
                 } catch (Exception e) {
                     System.out.println("That move didn't work, either because it wasn't formatted correctly or it wasn't legal.");
@@ -268,8 +269,21 @@ public class ChessClient implements ServerMessageObserver {
         return new ChessPosition(row, col);
     }
 
-    private ChessPiece.PieceType parsePromotionPiece(String promotion) {
-        return null; // TODO
+    private ChessPiece.PieceType parsePromotionPiece(String promotion) throws Exception {
+        switch (promotion.toLowerCase()) {
+            case "queen":
+                return ChessPiece.PieceType.QUEEN;
+            case "rook":
+                return ChessPiece.PieceType.ROOK;
+            case "bishop":
+                return ChessPiece.PieceType.BISHOP;
+            case "knight":
+                return ChessPiece.PieceType.KNIGHT;
+            case "":
+                return null;
+            default:
+                throw new Exception("That's not a valid piece type for promotion");
+        }
     }
 
     private void displayHelp() {

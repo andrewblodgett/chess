@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Represents a single chess piece
@@ -25,7 +26,7 @@ public class ChessPiece implements Serializable {
     /**
      * The various different chess piece options
      */
-    public enum PieceType {
+    public enum PieceType implements Serializable {
         KING,
         QUEEN,
         BISHOP,
@@ -135,47 +136,49 @@ public class ChessPiece implements Serializable {
                 }
             }
         } else if (type == PieceType.PAWN) {
-            var directionMultiplier = 1;
-            var startingRow = 2;
-            var promoRow = 8;
-            if (pieceColor == ChessGame.TeamColor.BLACK) {
-                directionMultiplier = -1;
-                startingRow = 7;
-                promoRow = 1;
-            }
-            try {
-                if (canCapture(board.getPiece(new ChessPosition(row + directionMultiplier, col + 1)))) {
-                    validMoves.add(new ChessMove(pos, new ChessPosition(row + directionMultiplier, col + 1), null));
+            int direction = (pieceColor == ChessGame.TeamColor.WHITE) ? 1 : -1;
+            int startRow = (pieceColor == ChessGame.TeamColor.WHITE) ? 2 : 7;
+            int promoRow = (pieceColor == ChessGame.TeamColor.WHITE) ? 8 : 1;
+
+            int forwardRow = row + direction;
+            int doubleJumpRow = row + (2 * direction);
+
+            Consumer<ChessPosition> addMove = (endPos) -> {
+                if (endPos.getRow() == promoRow) {
+                    validMoves.add(new ChessMove(pos, endPos, PieceType.QUEEN));
+                    validMoves.add(new ChessMove(pos, endPos, PieceType.ROOK));
+                    validMoves.add(new ChessMove(pos, endPos, PieceType.BISHOP));
+                    validMoves.add(new ChessMove(pos, endPos, PieceType.KNIGHT));
+                } else {
+                    validMoves.add(new ChessMove(pos, endPos, null));
                 }
-            } catch (ArrayIndexOutOfBoundsException e) {
-            }
-            try {
-                if (canCapture(board.getPiece(new ChessPosition(row + directionMultiplier, col - 1)))) {
-                    validMoves.add(new ChessMove(pos, new ChessPosition(row + directionMultiplier, col - 1), null));
-                }
-            } catch (ArrayIndexOutOfBoundsException e) {
-            }
-            if (board.getPiece(new ChessPosition(row + directionMultiplier, col)) == null) {
-                validMoves.add(new ChessMove(pos, new ChessPosition(row + directionMultiplier, col), null));
-                if (row == startingRow) {
-                    if (board.getPiece(new ChessPosition(row + 2 * directionMultiplier, col)) == null) {
-                        validMoves.add(new ChessMove(pos, new ChessPosition(row + 2 * directionMultiplier, col), null));
+            };
+
+            if (forwardRow >= 1 && forwardRow <= 8) {
+                ChessPosition forwardPos = new ChessPosition(forwardRow, col);
+
+                if (board.getPiece(forwardPos) == null) {
+                    addMove.accept(forwardPos);
+
+                    if (row == startRow) {
+                        ChessPosition doublePos = new ChessPosition(doubleJumpRow, col);
+                        if (board.getPiece(doublePos) == null) {
+                            addMove.accept(doublePos);
+                        }
                     }
                 }
             }
-            var movesToRemove = new HashSet<ChessMove>();
-            var movesToAdd = new HashSet<ChessMove>();
-            for (var m : validMoves) {
-                if (m.getEndPosition().getRow() == promoRow) {
-                    movesToRemove.add(m);
-                    movesToAdd.add(new ChessMove(m, PieceType.QUEEN));
-                    movesToAdd.add(new ChessMove(m, PieceType.ROOK));
-                    movesToAdd.add(new ChessMove(m, PieceType.BISHOP));
-                    movesToAdd.add(new ChessMove(m, PieceType.KNIGHT));
+
+            int[] captureCols = {col - 1, col + 1};
+            for (int captureCol : captureCols) {
+                if (captureCol >= 1 && captureCol <= 8 && forwardRow >= 1 && forwardRow <= 8) {
+                    ChessPosition targetPos = new ChessPosition(forwardRow, captureCol);
+                    ChessPiece targetPiece = board.getPiece(targetPos);
+                    if (targetPiece != null && targetPiece.getTeamColor() != pieceColor) {
+                        addMove.accept(targetPos);
+                    }
                 }
             }
-            validMoves.removeAll(movesToRemove);
-            validMoves.addAll(movesToAdd);
         }
         return validMoves;
     }

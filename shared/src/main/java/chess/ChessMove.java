@@ -24,8 +24,10 @@ public class ChessMove implements Serializable {
 
     // Promotion Constructor
     public ChessMove(ChessMove move, ChessPiece.PieceType promotionPiece) {
-        startPosition = move.startPosition;
-        endPosition = move.endPosition;
+//        startPosition = move.startPosition;
+        startPosition = move.getStartPosition();
+//        endPosition = move.endPosition;
+        endPosition = move.getEndPosition();
         this.promotionPiece = promotionPiece;
     }
 

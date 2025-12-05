@@ -123,8 +123,8 @@ public class GameService {
                 throw new Exception("This game has already finished, no more moves can be made");
             }
             moved.makeMove(move);
-            moved.isInCheckmate(ChessGame.TeamColor.WHITE);
-            moved.isInCheckmate(ChessGame.TeamColor.BLACK);
+//            moved.isInCheckmate(ChessGame.TeamColor.WHITE);
+//            moved.isInCheckmate(ChessGame.TeamColor.BLACK);
             var updatedGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), moved);
             dataAccess.updateGame(updatedGame);
             return updatedGame;

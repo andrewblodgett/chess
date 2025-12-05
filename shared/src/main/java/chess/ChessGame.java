@@ -206,6 +206,7 @@ public class ChessGame implements Serializable {
                     winner = null; // Draw
                 }
             } else {
+                System.out.println(validMoves(move.getStartPosition()));
                 throw new InvalidMoveException(move.toString() + " is an invalid move.");
             }
         } catch (Exception e) {

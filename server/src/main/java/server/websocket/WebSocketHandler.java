@@ -26,27 +26,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private UserGameCommand deserializeCommand(String message) {
-        UserGameCommand command = null;
-        ChessMove move = null;
-        UserGameCommand.CommandType commandType = null;
-        Map map = new Gson().fromJson(message, Map.class);
-        if (map.get("commandType").equals("CONNECT")) {
-            commandType = CONNECT;
-        } else if (map.get("commandType").equals("LEAVE")) {
-            commandType = LEAVE;
-        } else if (map.get("commandType").equals("RESIGN")) {
-            commandType = RESIGN;
-        } else if (map.get("commandType").equals("MAKE_MOVE")) {
-            commandType = MAKE_MOVE;
-            Map positions = new Gson().fromJson(map.get("move").toString(), Map.class);
-            Map<String, Double> start = new Gson().fromJson(positions.get("startPosition").toString(), Map.class);
-            Map<String, Double> end = new Gson().fromJson(positions.get("endPosition").toString(), Map.class);
-            move = new ChessMove(new ChessPosition((int) Math.round(start.get("row")), (int) Math.round(start.get("col"))),
-                    new ChessPosition((int) Math.round(end.get("row")), (int) Math.round(end.get("col"))), null);
-        }
-        command = new UserGameCommand(commandType, map.get("authToken").toString(),
-                (int) Math.round(Double.parseDouble(map.get("gameID").toString())), move);
-        return command;
+        return new Gson().fromJson(message, UserGameCommand.class);
     }
 
     @Override
