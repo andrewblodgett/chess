@@ -89,7 +89,6 @@ public class ChessClient implements ServerMessageObserver {
             case LOAD_GAME:
                 currentGame = msg.getGame();
                 displayBoard(msg.getGame().getBoard(), color != null ? color : ChessGame.TeamColor.WHITE, new HashSet<>());
-                System.out.println(msg.getGame().toString());
                 break;
         }
     }
