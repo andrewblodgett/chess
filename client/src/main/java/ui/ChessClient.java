@@ -229,7 +229,7 @@ public class ChessClient implements ServerMessageObserver {
                 displayHelp();
                 break;
             case "redraw", "r":
-                displayBoard(currentGame.getBoard(), color, new HashSet<>());
+                displayBoard(currentGame.getBoard(), ChessGame.TeamColor.WHITE, new HashSet<>());
                 break;
             case "leave", "l":
                 try {
